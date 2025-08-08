@@ -1199,9 +1199,9 @@
             }
         };
 
-        // Google Sheets Integration (Replace with your sheet ID)
+        // Google Apps Script Integration
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfo_Re6lvoGamnUuTosU9eBeeJclILrSZ-rTRpJxJEg0JH9z4GTSgjl6hfhcOHazLWUA/exec';
         const SHEET_ID = '15pNN3vIuLFug6nlL-GN0uwvkasLokGwPO5kTxmPIZZw';
-        const API_KEY = 'YOUR_GOOGLE_SHEETS_API_KEY'; // You'll need to get this from Google Cloud Console
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1413,42 +1413,134 @@
             document.getElementById('addEmployeeForm').reset();
         }
 
-        function handleAddEmployee(e) {
+        async function handleAddEmployee(e) {
             e.preventDefault();
             
-            // Get form data
-            const formData = {
-                empId: document.getElementById('newEmpId').value,
-                firstName: document.getElementById('newEmpFirstName').value,
-                lastName: document.getElementById('newEmpLastName').value,
-                email: document.getElementById('newEmpEmail').value,
-                department: document.getElementById('newEmpDept').value,
-                role: document.getElementById('newEmpRole').value
-            };
-            
-            // In real app, save to Google Sheets
-            console.log('Adding employee:', formData);
-            
-            closeAddEmployee();
-            showNotification('Employee added successfully!', 'success');
+            try {
+                // Get form data
+                const formData = {
+                    type: 'employee',
+                    employeeId: document.getElementById('newEmpId').value,
+                    firstName: document.getElementById('newEmpFirstName').value,
+                    lastName: document.getElementById('newEmpLastName').value,
+                    email: document.getElementById('newEmpEmail').value,
+                    department: document.getElementById('newEmpDept').value,
+                    role: document.getElementById('newEmpRole').value,
+                    joinDate: new Date().toISOString().split('T')[0],
+                    status: 'Active'
+                };
+                
+                // Send to Google Sheets
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    closeAddEmployee();
+                    showNotification('Employee added successfully!', 'success');
+                    
+                    // Refresh employee list if on admin page
+                    if (document.getElementById('admin').classList.contains('active')) {
+                        loadEmployeeList();
+                    }
+                } else {
+                    showNotification('Error adding employee. Please try again.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error adding employee:', error);
+                showNotification('Network error. Please check your connection.', 'error');
+            }
+        }
+        
+        // Load employee list for admin panel
+        async function loadEmployeeList() {
+            try {
+                const employees = await getEmployeeData('Employees');
+                // Update employee table in admin panel
+                // This would populate the admin table with real data
+                console.log('Employee data loaded:', employees);
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
         }
 
         // Google Sheets Integration Functions
-        function logActivity(type, timestamp, duration = null) {
-            // This function will log activities to your Google Sheet
-            const data = {
-                employeeId: currentUser.empId,
-                name: currentUser.name,
-                activity: type,
-                timestamp: timestamp.toISOString(),
-                duration: duration,
-                date: timestamp.toDateString()
-            };
-            
-            console.log('Logging activity:', data);
-            
-            // Implement Google Sheets API call here
-            // You'll need to set up Google Sheets API and get an API key
+        async function logActivity(type, timestamp, duration = null) {
+            try {
+                let data = {};
+                
+                // Prepare data based on activity type
+                if (type === 'shift_start' || type === 'shift_end') {
+                    data = {
+                        type: 'attendance',
+                        date: timestamp.toDateString(),
+                        employeeId: currentUser.empId,
+                        name: currentUser.name,
+                        loginTime: type === 'shift_start' ? timestamp.toTimeString().split(' ')[0] : '',
+                        logoutTime: type === 'shift_end' ? timestamp.toTimeString().split(' ')[0] : '',
+                        totalHours: '',
+                        breakDuration: duration ? formatDuration(duration) : '',
+                        status: 'Present'
+                    };
+                } else if (type === 'break_start' || type === 'break_end') {
+                    data = {
+                        type: 'break',
+                        timestamp: timestamp.toISOString(),
+                        employeeId: currentUser.empId,
+                        name: currentUser.name,
+                        action: type,
+                        duration: duration ? formatDuration(duration) : '',
+                        reason: type === 'break_start' ? 'Break' : 'Resume'
+                    };
+                }
+                
+                // Send data to Google Apps Script
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    console.log('Activity logged successfully:', data);
+                } else {
+                    console.error('Error logging activity:', response.statusText);
+                }
+                
+            } catch (error) {
+                console.error('Error logging to Google Sheets:', error);
+                // Store locally if network fails
+                const localLog = JSON.parse(localStorage.getItem('offlineLog') || '[]');
+                localLog.push({type, timestamp: timestamp.toISOString(), duration});
+                localStorage.setItem('offlineLog', JSON.stringify(localLog));
+            }
+        }
+        
+        // Helper function to format duration
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Function to get employee data from Google Sheets
+        async function getEmployeeData(sheetName = 'Employees') {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${sheetName}`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching employee data:', error);
+                return [];
+            }
         }
 
         // Utility Functions
@@ -1491,14 +1583,21 @@
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                // End shift
+                // Calculate total shift time
+                let totalShiftSeconds = 0;
+                if (shiftStartTime) {
+                    totalShiftSeconds = Math.floor((new Date() - shiftStartTime) / 1000) - totalBreakTime;
+                }
+                
+                // End shift and log data
                 if (shiftInterval) {
                     clearInterval(shiftInterval);
-                    logActivity('shift_end', new Date());
+                    logActivity('shift_end', new Date(), totalShiftSeconds);
                 }
                 
                 // Clear data
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentSession');
                 currentUser = null;
                 shiftStartTime = null;
                 isOnBreak = false;
@@ -1509,7 +1608,7 @@
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('loginPage').classList.remove('hidden');
                 
-                showNotification('Logged out successfully!', 'success');
+                showNotification('Logged out successfully! Shift data saved.', 'success');
             }
         }
 
