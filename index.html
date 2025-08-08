@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Portal - Modern HRMS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #3730a3;
+            --secondary-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-bg: #1f2937;
+            --dark-card: #374151;
+            --light-bg: #f8fafc;
+            --light-card: #ffffff;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --border-light: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: var(--dark-bg);
+            color: white;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Sidebar */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--light-card);
+            padding: 1.5rem 0;
+            border-right: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--dark-card);
+            border-right-color: #4b5563;
+        }
+
+        .nav-item {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(79, 70, 229, 0.1);
+            border-left-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--light-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        body.dark-mode .card {
+            background: var(--dark-card);
+            border-color: #4b5563;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Timer */
+        .timer-container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .timer-circle {
+            width: 200px;
+            height: 200px;
+            border: 8px solid var(--border-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            position: relative;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        body.dark-mode .form-control {
+            background: var(--dark-card);
+            border-color: #4b5563;
+            color: white;
+        }
+
+        /* Calendar */
+        .calendar {
+            margin-top: 1rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            background: var(--light-card);
+            padding: 1rem;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        body.dark-mode .calendar-day {
+            background: var(--dark-card);
+        }
+
+        .calendar-day.present {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .calendar-day.absent {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .calendar-day.half-day {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* Tasks */
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+        }
+
+        .task-text {
+            flex: 1;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* Training */
+        .training-module {
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .module-header {
+            padding: 1rem;
+            background: var(--light-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        body.dark-mode .module-header {
+            background: var(--dark-bg);
+        }
+
+        .module-content {
+            padding: 1rem;
+            display: none;
+        }
+
+        .module-content.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 2rem;
+            background: var(--light-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        body.dark-mode .notification {
+            background: var(--dark-card);
+            border-color: #4b5563;
+        }
+
+        /* Login Page */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        }
+
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+                overflow: hidden;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .scale-in {
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-form scale-in">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="fas fa-building" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--text-dark);">Employee Portal</h2>
+                <p style="color: var(--text-light);">Sign in to your account</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" class="form-control" id="employeeId" placeholder="Enter your employee ID" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In
+                </button>
+            </form>
+            
+            <div style="margin-top: 2rem; text-align: center;">
+                <small style="color: var(--text-light);">Demo Accounts:</small><br>
+                <small>Admin: admin / admin123</small><br>
+                <small>Employee: emp001 / emp123</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-building"></i>
+                <span>EMPLOYEE PORTAL</span>
+            </div>
+            
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">JD</div>
+                    <div>
+                        <div style="font-weight: 500;" id="userName">John Doe</div>
+                        <small style="opacity: 0.8;" id="userRole">Employee</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav>
+                    <div class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="nav-item" data-page="training">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Training Center</span>
+                    </div>
+                    <div class="nav-item" data-page="attendance">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Attendance</span>
+                    </div>
+                    <div class="nav-item" data-page="tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>Tasks</span>
+                    </div>
+                    <div class="nav-item hidden" data-page="admin" id="adminNavItem">
+                        <i class="fas fa-cog"></i>
+                        <span>Admin Panel</span>
+                    </div>
+                    <div class="nav-item" data-page="profile">
+                        <i class="fas fa-user"></i>
+                        <span>My Profile</span>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Page -->
+                <div class="page active" id="dashboard">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>Welcome back, <span id="welcomeName">John</span></h1>
+                        <p style="color: var(--text-light);">Here's what's happening today</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Current Shift Timer -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Current Shift</h3>
+                            <div class="timer-container">
+                                <div class="timer-circle">
+                                    <div class="timer-display" id="currentTime">09:44:12</div>
+                                </div>
+                                <div style="color: var(--success-color); margin-bottom: 1rem;">
+                                    <i class="fas fa-circle" style="font-size: 0.8rem;"></i>
+                                    <span id="shiftStatus">On Shift</span>
+                                </div>
+                                <div class="timer-controls">
+                                    <button class="btn btn-warning" id="breakBtn">
+                                        <i class="fas fa-pause"></i>
+                                        Break
+                                    </button>
+                                    <button class="btn btn-success" id="resumeBtn" style="display: none;">
+                                        <i class="fas fa-play"></i>
+                                        Resume
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Schedule -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Today's Schedule</h3>
+                            <div class="task-list">
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%;"></div>
+                                    <div>
+                                        <div style="font-weight: 500;">09:00-10:00</div>
+                                        <div style="font-size: 0.9rem; color: var(--text-light);">Weekly team Meeting</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
+                                    <div>
+                                        <div style="font-weight: 500;">11:00-12:30</div>
+                                        <div style="font-size: 0.9rem; color: var(--text-light);">Client Call</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0;">
+                                    <div style="width: 12px; height: 12px; background: var(--text-light); border-radius: 50%;"></div>
+                                    <div>
+                                        <div style="font-weight: 500;">13:00-17:00</div>
+                                        <div style="font-size: 0.9rem; color: var(--text-light);">Project Work</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Training Status -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Training Status</h3>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div style="font-weight: 500;">New Employee Onboarding</div>
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">Complete By Jun 30</div>
+                            </div>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Notifications</h3>
+                                <i class="fas fa-bell" style="color: var(--warning-color);"></i>
+                            </div>
+                            <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px; border-left: 4px solid var(--warning-color);">
+                                <div style="font-weight: 500;">Your shift starts in 30 mins</div>
+                                <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.25rem;">Don't forget to login!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Center Page -->
+                <div class="page" id="training">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>Training Center</h1>
+                        <p style="color: var(--text-light);">Complete your training modules and enhance your skills</p>
+                    </div>
+
+                    <div class="training-module">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <div>
+                                <h3>New Employee Onboarding</h3>
+                                <small style="color: var(--text-light);">5 lessons • 2 hours</small>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="color: var(--success-color);">75% Complete</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="module-content">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <span>1. Company Introduction</span>
+                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <span>2. HR Policies</span>
+                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <span>3. Safety Guidelines</span>
+                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                    <span>4. System Training</span>
+                                    <i class="fas fa-play-circle" style="color: var(--primary-color);"></i>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;">
+                                    <span>5. Final Assessment</span>
+                                    <i class="fas fa-lock" style="color: var(--text-light);"></i>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="margin-top: 1rem;">
+                                <i class="fas fa-play"></i>
+                                Continue Training
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="training-module">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <div>
+                                <h3>Advanced Excel Training</h3>
+                                <small style="color: var(--text-light);">8 lessons • 4 hours</small>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="color: var(--text-light);">Not Started</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="module-content">
+                            <p style="color: var(--text-light); margin-bottom: 1rem;">Master advanced Excel functions and data analysis techniques.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-play"></i>
+                                Start Training
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Page -->
+                <div class="page" id="attendance">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>Attendance</h1>
+                        <p style="color: var(--text-light);">Track your attendance and view monthly reports</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
+                        <div class="card">
+                            <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <button class="btn" style="background: transparent; padding: 0.5rem;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <h3>June 2024</h3>
+                                <button class="btn" style="background: transparent; padding: 0.5rem;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="calendar-grid">
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Su</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Mo</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Tu</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">We</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Th</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Fr</div>
+                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Sa</div>
+                                
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day">1</div>
+                                
+                                <div class="calendar-day">2</div>
+                                <div class="calendar-day present">3</div>
+                                <div class="calendar-day present">4</div>
+                                <div class="calendar-day present">5</div>
+                                <div class="calendar-day present">6</div>
+                                <div class="calendar-day present">7</div>
+                                <div class="calendar-day">8</div>
+                                
+                                <div class="calendar-day">9</div>
+                                <div class="calendar-day present">10</div>
+                                <div class="calendar-day present">11</div>
+                                <div class="calendar-day absent">12</div>
+                                <div class="calendar-day present">13</div>
+                                <div class="calendar-day half-day">14</div>
+                                <div class="calendar-day">15</div>
+                                
+                                <div class="calendar-day">16</div>
+                                <div class="calendar-day present">17</div>
+                                <div class="calendar-day present">18</div>
+                                <div class="calendar-day present">19</div>
+                                <div class="calendar-day present">20</div>
+                                <div class="calendar-day present">21</div>
+                                <div class="calendar-day">22</div>
+                                
+                                <div class="calendar-day">23</div>
+                                <div class="calendar-day present">24</div>
+                                <div class="calendar-day present">25</div>
+                                <div class="calendar-day present">26</div>
+                                <div class="calendar-day present">27</div>
+                                <div class="calendar-day present">28</div>
+                                <div class="calendar-day">29</div>
+                                
+                                <div class="calendar-day">30</div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card" style="margin-bottom: 1rem;">
+                                <h3 style="margin-bottom: 1rem;">Attendance Legend</h3>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
+                                    <span>Present</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <div style="width: 12px; height: 12px; background: var(--danger-color); border-radius: 50%;"></div>
+                                    <span>Absent</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="width: 12px; height: 12px; background: var(--warning-color); border-radius: 50%;"></div>
+                                    <span>Half Day</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h3 style="margin-bottom: 1rem;">Statistics</h3>
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span>Present Days</span>
+                                        <strong style="color: var(--success-color);">18</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span>Absent Days</span>
+                                        <strong style="color: var(--danger-color);">1</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span>Half Days</span>
+                                        <strong style="color: var(--warning-color);">1</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>Attendance %</span>
+                                        <strong style="color: var(--primary-color);">90%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Page -->
+                <div class="page" id="tasks">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h1>Tasks</h1>
+                            <p style="color: var(--text-light);">Manage your daily tasks and assignments</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="addNewTask()">
+                            <i class="fas fa-plus"></i>
+                            New Task
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="task-list" id="taskList">
+                            <div class="task-item">
+                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
+                                <div class="task-text">
+                                    <div style="font-weight: 500;">Finalize Project Plan</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Today 5:00 PM</div>
+                                </div>
+                                <span style="background: var(--danger-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">High</span>
+                            </div>
+                            
+                            <div class="task-item">
+                                <input type="checkbox" class="task-checkbox" checked onchange="toggleTask(this)">
+                                <div class="task-text completed">
+                                    <div style="font-weight: 500;">Review Client Feedback</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Completed 2 hours ago</div>
+                                </div>
+                                <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Done</span>
+                            </div>
+                            
+                            <div class="task-item">
+                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
+                                <div class="task-text">
+                                    <div style="font-weight: 500;">Update Documentation</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Tomorrow 12:00 PM</div>
+                                </div>
+                                <span style="background: var(--warning-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Medium</span>
+                            </div>
+                            
+                            <div class="task-item">
+                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
+                                <div class="task-text">
+                                    <div style="font-weight: 500;">Prepare Weekly Report</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Friday 3:00 PM</div>
+                                </div>
+                                <span style="background: var(--primary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Panel -->
+                <div class="page" id="admin">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>Admin Panel</h1>
+                        <p style="color: var(--text-light);">Manage employees, schedules, and system settings</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Employee Management</h3>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="showAddEmployee()">
+                                    <i class="fas fa-plus"></i>
+                                    Add Employee
+                                </button>
+                                <button class="btn btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Employee
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Reports & Analytics</h3>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-success">
+                                    <i class="fas fa-download"></i>
+                                    Download Report
+                                </button>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-chart-bar"></i>
+                                    View Analytics
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">System Settings</h3>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-cog"></i>
+                                    Settings
+                                </button>
+                                <button class="btn btn-warning">
+                                    <i class="fas fa-database"></i>
+                                    Backup Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem;">Employee List</h3>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border-light);">
+                                        <th style="padding: 1rem; text-align: left;">ID</th>
+                                        <th style="padding: 1rem; text-align: left;">Name</th>
+                                        <th style="padding: 1rem; text-align: left;">Department</th>
+                                        <th style="padding: 1rem; text-align: left;">Status</th>
+                                        <th style="padding: 1rem; text-align: left;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid var(--border-light);">
+                                        <td style="padding: 1rem;">EMP001</td>
+                                        <td style="padding: 1rem;">John Doe</td>
+                                        <td style="padding: 1rem;">Development</td>
+                                        <td style="padding: 1rem;"><span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Active</span></td>
+                                        <td style="padding: 1rem;">
+                                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--border-light);">
+                                        <td style="padding: 1rem;">EMP002</td>
+                                        <td style="padding: 1rem;">Jane Smith</td>
+                                        <td style="padding: 1rem;">Marketing</td>
+                                        <td style="padding: 1rem;"><span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Active</span></td>
+                                        <td style="padding: 1rem;">
+                                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Page -->
+                <div class="page" id="profile">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>My Profile</h1>
+                        <p style="color: var(--text-light);">Manage your personal information and settings</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="card" style="text-align: center;">
+                            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; margin: 0 auto 1rem;">
+                                JD
+                            </div>
+                            <h3>John Doe</h3>
+                            <p style="color: var(--text-light);">Software Developer</p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">Department: Development</p>
+                            
+                            <button class="btn btn-danger" style="width: 100%; margin-top: 2rem;" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1.5rem;">Personal Information</h3>
+                            <form>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" value="John">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" value="Doe">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Employee ID</label>
+                                    <input type="text" class="form-control" value="EMP001" readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="john.doe@company.com">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" value="+1 (555) 123-4567">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Department</label>
+                                    <select class="form-control">
+                                        <option>Development</option>
+                                        <option>Marketing</option>
+                                        <option>Sales</option>
+                                        <option>HR</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Save Changes
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal (for admin) -->
+    <div id="addEmployeeModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="card" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Add New Employee</h3>
+                <button onclick="closeAddEmployee()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <form id="addEmployeeForm">
+                <div class="form-group">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" class="form-control" id="newEmpId" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="newEmpFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="newEmpLastName" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="newEmpEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select class="form-control" id="newEmpDept" required>
+                        <option value="">Select Department</option>
+                        <option value="Development">Development</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                        <option value="HR">HR</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-control" id="newEmpRole" required>
+                        <option value="">Select Role</option>
+                        <option value="employee">Employee</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-plus"></i>
+                        Add Employee
+                    </button>
+                    <button type="button" class="btn" onclick="closeAddEmployee()" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let shiftStartTime = null;
+        let isOnBreak = false;
+        let breakStartTime = null;
+        let totalBreakTime = 0;
+        let shiftInterval = null;
+        let isDarkMode = false;
+
+        // Demo users (in real app, this would come from your database)
+        const demoUsers = {
+            'admin': { 
+                password: 'admin123', 
+                name: 'Admin User', 
+                role: 'admin',
+                empId: 'admin',
+                department: 'Administration'
+            },
+            'emp001': { 
+                password: 'emp123', 
+                name: 'John Doe', 
+                role: 'employee',
+                empId: 'emp001',
+                department: 'Development'
+            }
+        };
+
+        // Google Sheets Integration (Replace with your sheet ID)
+        const SHEET_ID = '15pNN3vIuLFug6nlL-GN0uwvkasLokGwPO5kTxmPIZZw';
+        const API_KEY = 'YOUR_GOOGLE_SHEETS_API_KEY'; // You'll need to get this from Google Cloud Console
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+            }
+
+            // Add event listeners
+            setupEventListeners();
+            
+            // Start real-time clock
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page) switchPage(page);
+                });
+            });
+
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Break/Resume buttons
+            document.getElementById('breakBtn').addEventListener('click', takeBreak);
+            document.getElementById('resumeBtn').addEventListener('click', resumeShift);
+            
+            // Add employee form
+            document.getElementById('addEmployeeForm').addEventListener('submit', handleAddEmployee);
+        }
+
+        // Login Function
+        function handleLogin(e) {
+            e.preventDefault();
+            const empId = document.getElementById('employeeId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (demoUsers[empId] && demoUsers[empId].password === password) {
+                currentUser = demoUsers[empId];
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showMainApp();
+                showNotification('Login successful! Welcome back.', 'success');
+            } else {
+                showNotification('Invalid credentials. Please try again.', 'error');
+            }
+        }
+
+        // Show main application
+        function showMainApp() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Update user info
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userRole').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+            document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            
+            // Show admin panel if admin
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminNavItem').classList.remove('hidden');
+            }
+            
+            // Start shift automatically
+            startShift();
+        }
+
+        // Page Navigation
+        function switchPage(pageName) {
+            // Remove active class from all nav items and pages
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            
+            // Add active class to selected nav item and page
+            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+            document.getElementById(pageName).classList.add('active');
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            
+            const icon = document.querySelector('#themeToggle i');
+            icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+            
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        // Shift Management
+        function startShift() {
+            if (!shiftStartTime) {
+                shiftStartTime = new Date();
+                updateShiftTimer();
+                shiftInterval = setInterval(updateShiftTimer, 1000);
+                document.getElementById('shiftStatus').textContent = 'On Shift';
+                
+                // Log to Google Sheets (you'll implement this)
+                logActivity('shift_start', shiftStartTime);
+            }
+        }
+
+        function updateShiftTimer() {
+            if (!shiftStartTime) return;
+            
+            const now = new Date();
+            const elapsed = Math.floor((now - shiftStartTime) / 1000) - totalBreakTime;
+            
+            const hours = Math.floor(elapsed / 3600);
+            const minutes = Math.floor((elapsed % 3600) / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('currentTime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function takeBreak() {
+            if (!isOnBreak) {
+                isOnBreak = true;
+                breakStartTime = new Date();
+                document.getElementById('breakBtn').style.display = 'none';
+                document.getElementById('resumeBtn').style.display = 'inline-flex';
+                document.getElementById('shiftStatus').textContent = 'On Break';
+                
+                logActivity('break_start', breakStartTime);
+                showNotification('Break started. Don\'t forget to resume!', 'info');
+            }
+        }
+
+        function resumeShift() {
+            if (isOnBreak && breakStartTime) {
+                const breakDuration = Math.floor((new Date() - breakStartTime) / 1000);
+                totalBreakTime += breakDuration;
+                
+                isOnBreak = false;
+                breakStartTime = null;
+                
+                document.getElementById('resumeBtn').style.display = 'none';
+                document.getElementById('breakBtn').style.display = 'inline-flex';
+                document.getElementById('shiftStatus').textContent = 'On Shift';
+                
+                logActivity('break_end', new Date(), breakDuration);
+                showNotification('Welcome back! Shift resumed.', 'success');
+            }
+        }
+
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            // You can add live clock display if needed
+        }
+
+        // Training Module Toggle
+        function toggleModule(moduleHeader) {
+            const content = moduleHeader.nextElementSibling;
+            const icon = moduleHeader.querySelector('i');
+            
+            content.classList.toggle('active');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+
+        // Task Management
+        function toggleTask(checkbox) {
+            const taskText = checkbox.nextElementSibling;
+            taskText.classList.toggle('completed', checkbox.checked);
+            
+            if (checkbox.checked) {
+                showNotification('Task completed! Great job.', 'success');
+            }
+        }
+
+        function addNewTask() {
+            const taskText = prompt('Enter new task:');
+            if (taskText) {
+                const taskList = document.getElementById('taskList');
+                const newTask = document.createElement('div');
+                newTask.className = 'task-item';
+                newTask.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
+                    <div class="task-text">
+                        <div style="font-weight: 500;">${taskText}</div>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">Added just now</div>
+                    </div>
+                    <span style="background: var(--primary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">New</span>
+                `;
+                taskList.appendChild(newTask);
+                showNotification('New task added successfully!', 'success');
+            }
+        }
+
+        // Admin Functions
+        function showAddEmployee() {
+            document.getElementById('addEmployeeModal').classList.remove('hidden');
+        }
+
+        function closeAddEmployee() {
+            document.getElementById('addEmployeeModal').classList.add('hidden');
+            document.getElementById('addEmployeeForm').reset();
+        }
+
+        function handleAddEmployee(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                empId: document.getElementById('newEmpId').value,
+                firstName: document.getElementById('newEmpFirstName').value,
+                lastName: document.getElementById('newEmpLastName').value,
+                email: document.getElementById('newEmpEmail').value,
+                department: document.getElementById('newEmpDept').value,
+                role: document.getElementById('newEmpRole').value
+            };
+            
+            // In real app, save to Google Sheets
+            console.log('Adding employee:', formData);
+            
+            closeAddEmployee();
+            showNotification('Employee added successfully!', 'success');
+        }
+
+        // Google Sheets Integration Functions
+        function logActivity(type, timestamp, duration = null) {
+            // This function will log activities to your Google Sheet
+            const data = {
+                employeeId: currentUser.empId,
+                name: currentUser.name,
+                activity: type,
+                timestamp: timestamp.toISOString(),
+                duration: duration,
+                date: timestamp.toDateString()
+            };
+            
+            console.log('Logging activity:', data);
+            
+            // Implement Google Sheets API call here
+            // You'll need to set up Google Sheets API and get an API key
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification show';
+            
+            let icon = 'fas fa-info-circle';
+            let color = 'var(--primary-color)';
+            
+            switch(type) {
+                case 'success':
+                    icon = 'fas fa-check-circle';
+                    color = 'var(--success-color)';
+                    break;
+                case 'error':
+                    icon = 'fas fa-exclamation-circle';
+                    color = 'var(--danger-color)';
+                    break;
+                case 'warning':
+                    icon = 'fas fa-exclamation-triangle';
+                    color = 'var(--warning-color)';
+                    break;
+            }
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="${icon}" style="color: ${color};"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // End shift
+                if (shiftInterval) {
+                    clearInterval(shiftInterval);
+                    logActivity('shift_end', new Date());
+                }
+                
+                // Clear data
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                shiftStartTime = null;
+                isOnBreak = false;
+                breakStartTime = null;
+                totalBreakTime = 0;
+                
+                // Show login page
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('loginPage').classList.remove('hidden');
+                
+                showNotification('Logged out successfully!', 'success');
+            }
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('darkMode');
+        if (savedTheme === 'true') {
+            toggleTheme();
+        }
+
+        // Auto-save functionality (optional)
+        setInterval(() => {
+            if (currentUser && shiftStartTime) {
+                // Auto-save current session data
+                const sessionData = {
+                    user: currentUser,
+                    shiftStart: shiftStartTime,
+                    totalBreak: totalBreakTime,
+                    isOnBreak: isOnBreak
+                };
+                localStorage.setItem('currentSession', JSON.stringify(sessionData));
+            }
+        }, 30000); // Save every 30 seconds
+    </script>
+</body>
+</html>
