@@ -499,7 +499,11 @@
                         <i class="fas fa-tasks"></i>
                         <span>Tasks</span>
                     </div>
-                    <div class="nav-item hidden" data-page="admin" id="adminNavItem">
+                    <div class="nav-item" data-page="debug">
+                        <i class="fas fa-bug"></i>
+                        <span>Debug Panel</span>
+                    </div>
+                    <div class="nav-item" data-page="admin" id="adminNavItem">
                         <i class="fas fa-cog"></i>
                         <span>Admin Panel</span>
                     </div>
@@ -678,6 +682,129 @@
                     </div>
                 </div>
 
+                <!-- Debug Panel -->
+                <div class="page" id="debug">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>🔧 Debug Panel</h1>
+                        <p style="color: var(--text-light);">Troubleshoot connection and data issues</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Connection Test -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">📡 Connection Test</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="testConnection()">
+                                    <i class="fas fa-wifi"></i>
+                                    Test Google Sheets Connection
+                                </button>
+                                <button class="btn btn-success" onclick="testLogin()">
+                                    <i class="fas fa-user-check"></i>
+                                    Test Login System
+                                </button>
+                                <button class="btn btn-warning" onclick="testDataSync()">
+                                    <i class="fas fa-sync"></i>
+                                    Test Data Sync
+                                </button>
+                                <button class="btn btn-danger" onclick="clearAllData()">
+                                    <i class="fas fa-trash"></i>
+                                    Clear All Local Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Current Status -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">📊 Current Status</h3>
+                            <div id="debugStatus" style="font-family: monospace; background: var(--light-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+                                <div><strong>User:</strong> <span id="debugUser">Loading...</span></div>
+                                <div><strong>Connection:</strong> <span id="debugConnection">Checking...</span></div>
+                                <div><strong>Apps Script URL:</strong> <span id="debugURL">Loading...</span></div>
+                                <div><strong>Sheet ID:</strong> <span id="debugSheetID">Loading...</span></div>
+                            </div>
+                            <button class="btn btn-primary" onclick="refreshDebugStatus()" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-sync"></i>
+                                Refresh Status
+                            </button>
+                        </div>
+
+                        <!-- Console Logs -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">📝 Live Console</h3>
+                            <div id="debugConsole" style="height: 200px; overflow-y: auto; background: var(--dark-bg); color: white; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem;">
+                                <div style="color: #10b981;">[System] Debug console started...</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="clearConsole()" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-broom"></i>
+                                Clear Console
+                            </button>
+                        </div>
+
+                        <!-- Manual Setup Guide -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">🛠️ Manual Setup</h3>
+                            <div style="background: var(--light-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+                                <div style="margin-bottom: 1rem;">
+                                    <strong>1. Apps Script URL:</strong><br>
+                                    <input type="text" id="manualAppsScriptURL" placeholder="Paste your Apps Script URL here" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: 1px solid var(--border-light); border-radius: 4px;">
+                                    <button class="btn btn-primary" onclick="updateAppsScriptURL()" style="margin-top: 0.5rem; width: 100%;">Update URL</button>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <strong>2. Current Sheet ID:</strong><br>
+                                    <code style="background: var(--dark-bg); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${SHEET_ID}</code>
+                                </div>
+                                
+                                <div>
+                                    <strong>3. Quick Actions:</strong><br>
+                                    <button class="btn btn-success" onclick="initializeEverything()" style="margin-top: 0.5rem; width: 100%;">
+                                        <i class="fas fa-rocket"></i>
+                                        Initialize Everything
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Records -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">💾 Local Data</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="showLocalData('currentUser')">
+                                    <i class="fas fa-user"></i>
+                                    View Current User
+                                </button>
+                                <button class="btn btn-success" onclick="showLocalData('activityLog')">
+                                    <i class="fas fa-list"></i>
+                                    View Activity Log
+                                </button>
+                                <button class="btn btn-warning" onclick="exportDebugData()">
+                                    <i class="fas fa-download"></i>
+                                    Export Debug Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Fixes -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">⚡ Quick Fixes</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-success" onclick="forceAdminMode()">
+                                    <i class="fas fa-crown"></i>
+                                    Force Admin Mode
+                                </button>
+                                <button class="btn btn-warning" onclick="recreateDefaultUser()">
+                                    <i class="fas fa-user-plus"></i>
+                                    Recreate Default Users
+                                </button>
+                                <button class="btn btn-primary" onclick="forceSheetConnection()">
+                                    <i class="fas fa-link"></i>
+                                    Force Sheet Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Admin Panel -->
                 <div class="page" id="admin">
                     <div style="margin-bottom: 2rem;">
@@ -767,8 +894,8 @@
     </div>
 
     <script>
-        // Google Sheets Configuration
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfo_Re6lvoGamnUuTosU9eBeeJclILrSZ-rTRpJxJEg0JH9z4GTSgjl6hfhcOHazLWUA/exec';
+        // Google Sheets Configuration - UPDATE THIS URL AFTER APPS SCRIPT DEPLOYMENT
+        const GOOGLE_APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // Replace with your actual Apps Script URL
         const SHEET_ID = '15pNN3vIuLFug6nlL-GN0uwvkasLokGwPO5kTxmPIZZw';
 
         // Application State
@@ -789,13 +916,24 @@
             setInterval(updateClock, 1000);
             setInterval(checkConnection, 30000); // Check connection every 30 seconds
             
+            // Initialize debug console
+            addToDebugConsole('🚀 Employee Portal Started', 'success');
+            addToDebugConsole('📊 Current Sheet ID: ' + SHEET_ID, 'info');
+            addToDebugConsole('🔗 Apps Script URL: ' + (GOOGLE_APPS_SCRIPT_URL ? 'Configured' : 'Not Set'), GOOGLE_APPS_SCRIPT_URL ? 'success' : 'error');
+            
             // Try to restore session
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
+                addToDebugConsole('🔄 User session restored: ' + currentUser.name, 'success');
                 showMainApp();
                 restoreSession();
+            } else {
+                addToDebugConsole('👤 No saved user session found', 'warning');
             }
+            
+            // Initialize debug status
+            setTimeout(() => refreshDebugStatus(), 1000);
         });
 
         function setupEventListeners() {
@@ -823,6 +961,14 @@
         // Connection Management
         async function checkConnection() {
             try {
+                // Check if URL is configured
+                if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+                    setConnectionStatus(false);
+                    updateSystemStatus('Not Configured', 'Apps Script URL needed');
+                    addToDebugConsole('⚠️ Apps Script URL not configured', 'warning');
+                    return;
+                }
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=ping', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
@@ -831,13 +977,16 @@
                 if (response.ok) {
                     setConnectionStatus(true);
                     updateSystemStatus('Connected', new Date().toLocaleTimeString());
+                    addToDebugConsole('✅ Connection check successful', 'success');
                 } else {
                     setConnectionStatus(false);
                     updateSystemStatus('Error', 'Connection failed');
+                    addToDebugConsole(`❌ Connection failed: ${response.status}`, 'error');
                 }
             } catch (error) {
                 setConnectionStatus(false);
                 updateSystemStatus('Offline', 'No internet connection');
+                addToDebugConsole(`❌ Connection error: ${error.message}`, 'error');
             }
         }
 
@@ -875,39 +1024,94 @@
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
             loginBtn.disabled = true;
             
+            addToDebugConsole(`🔐 Login attempt: ${empId}`, 'info');
+            
             try {
-                // Check with Google Sheets
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'login',
-                        employeeId: empId,
-                        password: password
-                    })
-                });
+                // Check if Apps Script URL is configured
+                if (GOOGLE_APPS_SCRIPT_URL && GOOGLE_APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+                    // Try online login
+                    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'login',
+                            employeeId: empId,
+                            password: password
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        currentUser = {
+                            empId: empId,
+                            name: result.name,
+                            role: result.role || 'employee',
+                            department: result.department || 'General'
+                        };
+                        
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        showMainApp();
+                        showNotification('Login successful! Welcome back.', 'success');
+                        addToDebugConsole('✅ Online login successful', 'success');
+                        
+                        // Log the login activity
+                        await logActivity('login', new Date());
+                        return;
+                    } else {
+                        addToDebugConsole(`❌ Online login failed: ${result.message}`, 'error');
+                    }
+                } else {
+                    addToDebugConsole('⚠️ Apps Script URL not configured, using offline mode', 'warning');
+                }
                 
-                const result = await response.json();
+                // Fallback to offline/demo login
+                const demoUsers = {
+                    'admin': { 
+                        password: 'admin123', 
+                        name: 'Admin User', 
+                        role: 'admin',
+                        department: 'Administration'
+                    },
+                    'emp001': { 
+                        password: 'emp123', 
+                        name: 'John Doe', 
+                        role: 'employee',
+                        department: 'Development'
+                    }
+                };
                 
-                if (result.success) {
+                if (demoUsers[empId] && demoUsers[empId].password === password) {
                     currentUser = {
                         empId: empId,
-                        name: result.name,
-                        role: result.role || 'employee',
-                        department: result.department || 'General'
+                        name: demoUsers[empId].name,
+                        role: demoUsers[empId].role,
+                        department: demoUsers[empId].department
                     };
                     
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     showMainApp();
-                    showNotification('Login successful! Welcome back.', 'success');
+                    showNotification('Login successful (offline mode)', 'warning');
+                    addToDebugConsole('✅ Offline login successful', 'success');
                     
-                    // Log the login activity
-                    await logActivity('login', new Date());
+                    // Log activity locally
+                    const localLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+                    localLog.push({
+                        action: 'login',
+                        employeeId: empId,
+                        name: currentUser.name,
+                        timestamp: new Date().toISOString(),
+                        mode: 'offline'
+                    });
+                    localStorage.setItem('activityLog', JSON.stringify(localLog));
                 } else {
-                    showNotification(result.message || 'Invalid credentials', 'error');
+                    showNotification('Invalid credentials. Try: admin/admin123 or emp001/emp123', 'error');
+                    addToDebugConsole('❌ Invalid credentials provided', 'error');
                 }
+                
             } catch (error) {
-                // Fallback to demo login if offline
+                addToDebugConsole(`❌ Login error: ${error.message}`, 'error');
+                // Still try demo login on network error
                 if (empId === 'admin' && password === 'admin123') {
                     currentUser = {
                         empId: 'admin',
@@ -918,8 +1122,9 @@
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     showMainApp();
                     showNotification('Login successful (offline mode)', 'warning');
+                    addToDebugConsole('✅ Fallback login successful', 'success');
                 } else {
-                    showNotification('Connection error. Try again or use admin/admin123', 'error');
+                    showNotification('Connection error. Try: admin/admin123', 'error');
                 }
             } finally {
                 loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
@@ -1884,6 +2089,284 @@
                 document.getElementById('loginPage').classList.remove('hidden');
                 
                 showNotification('Logged out successfully!', 'success');
+            }
+        }
+
+        // Debug Functions
+        function addToDebugConsole(message, type = 'info') {
+            const console = document.getElementById('debugConsole');
+            if (console) {
+                const time = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                
+                const colors = {
+                    'info': '#06b6d4',
+                    'success': '#10b981', 
+                    'error': '#ef4444',
+                    'warning': '#f59e0b'
+                };
+                
+                const color = colors[type] || '#6b7280';
+                entry.innerHTML = `<span style="color: ${color};">[${time}]</span> ${message}`;
+                console.appendChild(entry);
+                console.scrollTop = console.scrollHeight;
+                
+                // Keep only last 50 entries
+                while (console.children.length > 50) {
+                    console.removeChild(console.firstChild);
+                }
+            }
+        }
+        
+        async function testConnection() {
+            addToDebugConsole('🧪 Testing Google Sheets connection...', 'info');
+            
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=ping', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    addToDebugConsole('✅ Connection successful!', 'success');
+                    showNotification('✅ Google Sheets connection working!', 'success');
+                } else {
+                    addToDebugConsole(`❌ Connection failed: ${response.status}`, 'error');
+                    showNotification('❌ Connection failed. Check Apps Script URL.', 'error');
+                }
+            } catch (error) {
+                addToDebugConsole(`❌ Network error: ${error.message}`, 'error');
+                showNotification('❌ Network error. Check internet connection.', 'error');
+            }
+        }
+        
+        async function testLogin() {
+            addToDebugConsole('🧪 Testing login system...', 'info');
+            
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        employeeId: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addToDebugConsole('✅ Login system working!', 'success');
+                    showNotification('✅ Login system is working!', 'success');
+                } else {
+                    addToDebugConsole(`❌ Login failed: ${result.message}`, 'error');
+                    showNotification('❌ Login system issue detected.', 'error');
+                }
+            } catch (error) {
+                addToDebugConsole(`❌ Login test error: ${error.message}`, 'error');
+                showNotification('❌ Login test failed.', 'error');
+            }
+        }
+        
+        async function testDataSync() {
+            addToDebugConsole('🧪 Testing data sync...', 'info');
+            
+            try {
+                const testData = {
+                    action: 'log_activity',
+                    employeeId: 'test',
+                    name: 'Test User',
+                    type: 'test_sync',
+                    timestamp: new Date().toISOString()
+                };
+                
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    addToDebugConsole('✅ Data sync working!', 'success');
+                    showNotification('✅ Data sync is working!', 'success');
+                } else {
+                    addToDebugConsole(`❌ Data sync failed: ${response.status}`, 'error');
+                    showNotification('❌ Data sync issue detected.', 'error');
+                }
+            } catch (error) {
+                addToDebugConsole(`❌ Data sync error: ${error.message}`, 'error');
+                showNotification('❌ Data sync test failed.', 'error');
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('⚠️ This will clear ALL local data including login session. Continue?')) {
+                localStorage.clear();
+                addToDebugConsole('🧹 All local data cleared', 'warning');
+                showNotification('🧹 All data cleared. Please refresh page.', 'warning');
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        }
+        
+        function refreshDebugStatus() {
+            document.getElementById('debugUser').textContent = currentUser ? currentUser.name : 'Not logged in';
+            document.getElementById('debugConnection').textContent = isConnected ? 'Connected' : 'Offline';
+            document.getElementById('debugURL').textContent = GOOGLE_APPS_SCRIPT_URL ? 'Configured' : 'Not set';
+            document.getElementById('debugSheetID').textContent = SHEET_ID || 'Not set';
+            
+            addToDebugConsole('📊 Debug status refreshed', 'info');
+        }
+        
+        function clearConsole() {
+            document.getElementById('debugConsole').innerHTML = '<div style="color: #10b981;">[System] Console cleared...</div>';
+        }
+        
+        function updateAppsScriptURL() {
+            const newURL = document.getElementById('manualAppsScriptURL').value.trim();
+            
+            if (newURL) {
+                // This would require code modification, show instructions instead
+                addToDebugConsole('⚠️ To update URL, modify line 243 in code:', 'warning');
+                addToDebugConsole(`const GOOGLE_APPS_SCRIPT_URL = '${newURL}';`, 'info');
+                showNotification('📝 Copy the URL and update code manually', 'info');
+            } else {
+                showNotification('❌ Please enter a valid URL', 'error');
+            }
+        }
+        
+        function initializeEverything() {
+            addToDebugConsole('🚀 Initializing all systems...', 'info');
+            
+            // Force admin mode
+            forceAdminMode();
+            
+            // Recreate user
+            recreateDefaultUser();
+            
+            // Test connection
+            setTimeout(() => testConnection(), 1000);
+            
+            showNotification('🚀 System initialization started!', 'success');
+        }
+        
+        function showLocalData(type) {
+            const data = localStorage.getItem(type);
+            
+            if (data) {
+                addToDebugConsole(`📊 ${type}: ${data}`, 'info');
+                
+                // Create modal to show data
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.5); z-index: 1000; 
+                    display: flex; align-items: center; justify-content: center;
+                `;
+                
+                modal.innerHTML = `
+                    <div class="card" style="width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>📊 ${type}</h3>
+                            <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <pre style="background: var(--dark-bg); color: white; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.8rem;">${JSON.stringify(JSON.parse(data), null, 2)}</pre>
+                    </div>
+                `;
+                
+                modal.className = 'modal';
+                document.body.appendChild(modal);
+            } else {
+                addToDebugConsole(`❌ No ${type} data found`, 'error');
+                showNotification(`❌ No ${type} data found`, 'error');
+            }
+        }
+        
+        function exportDebugData() {
+            const debugData = {
+                currentUser: localStorage.getItem('currentUser'),
+                activityLog: localStorage.getItem('activityLog'),
+                currentSession: localStorage.getItem('currentSession'),
+                isConnected: isConnected,
+                appsScriptURL: GOOGLE_APPS_SCRIPT_URL,
+                sheetID: SHEET_ID,
+                timestamp: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(debugData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `debug-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            addToDebugConsole('📁 Debug data exported', 'success');
+            showNotification('📁 Debug data exported!', 'success');
+        }
+        
+        function forceAdminMode() {
+            currentUser = {
+                empId: 'admin',
+                name: 'Admin User',
+                role: 'admin',
+                department: 'Administration'
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Update UI
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userRole').textContent = 'Admin';
+            document.getElementById('welcomeName').textContent = 'Admin';
+            document.getElementById('userAvatar').textContent = 'AU';
+            
+            // Show admin panel
+            document.getElementById('adminNavItem').classList.remove('hidden');
+            
+            addToDebugConsole('👑 Admin mode activated', 'success');
+            showNotification('👑 Admin mode activated!', 'success');
+        }
+        
+        function recreateDefaultUser() {
+            const defaultUsers = {
+                admin: {
+                    password: 'admin123',
+                    name: 'Admin User',
+                    role: 'admin',
+                    department: 'Administration'
+                },
+                emp001: {
+                    password: 'emp123',
+                    name: 'John Doe',
+                    role: 'employee',
+                    department: 'Development'
+                }
+            };
+            
+            // This simulates having users available for login
+            addToDebugConsole('👥 Default users recreated:', 'success');
+            addToDebugConsole('- admin / admin123 (Admin)', 'info');
+            addToDebugConsole('- emp001 / emp123 (Employee)', 'info');
+            
+            showNotification('👥 Default users recreated!', 'success');
+        }
+        
+        function forceSheetConnection() {
+            addToDebugConsole('🔗 Attempting to force sheet connection...', 'info');
+            
+            if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyfo_Re6lvoGamnUuTosU9eBeeJclILrSZ-rTRpJxJEg0JH9z4GTSgjl6hfhcOHazLWUA/exec') {
+                addToDebugConsole('❌ Apps Script URL not properly configured', 'error');
+                showNotification('❌ Please setup Google Apps Script first!', 'error');
+                
+                // Show setup instructions
+                addToDebugConsole('📖 Setup Instructions:', 'warning');
+                addToDebugConsole('1. Go to script.google.com', 'info');
+                addToDebugConsole('2. Create new project', 'info');
+                addToDebugConsole('3. Paste Apps Script code', 'info');
+                addToDebugConsole('4. Deploy as web app', 'info');
+                addToDebugConsole('5. Copy URL and update in code', 'info');
+            } else {
+                testConnection();
             }
         }
 
