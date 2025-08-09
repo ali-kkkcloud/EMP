@@ -581,6 +581,12 @@
                                         End Shift
                                     </button>
                                 </div>
+                                
+                                <div style="text-align: center; margin-top: 1rem; padding: 1rem; background: var(--light-bg); border-radius: 8px;">
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">
+                                        💡 <strong>Quick Start:</strong> Click "Start Shift" to begin tracking your work hours
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -788,13 +794,17 @@
                         <div class="card">
                             <h3 style="margin-bottom: 1rem;">⚡ Quick Fixes</h3>
                             <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-danger" onclick="emergencyFix()" style="background: #ff4444;">
+                                    <i class="fas fa-ambulance"></i>
+                                    🚨 Emergency Fix (Blank Pages)
+                                </button>
+                                <button class="btn btn-warning" onclick="forceReloadContent()">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Force Reload All Content
+                                </button>
                                 <button class="btn btn-success" onclick="forceAdminMode()">
                                     <i class="fas fa-crown"></i>
                                     Force Admin Mode
-                                </button>
-                                <button class="btn btn-warning" onclick="recreateDefaultUser()">
-                                    <i class="fas fa-user-plus"></i>
-                                    Recreate Default Users
                                 </button>
                                 <button class="btn btn-primary" onclick="forceSheetConnection()">
                                     <i class="fas fa-link"></i>
@@ -933,7 +943,21 @@
             }
             
             // Initialize debug status
-            setTimeout(() => refreshDebugStatus(), 1000);
+            setTimeout(() => {
+                refreshDebugStatus();
+                
+                // Emergency check for blank pages after 2 seconds
+                setTimeout(() => {
+                    const dashboardPage = document.getElementById('dashboard');
+                    if (dashboardPage && dashboardPage.classList.contains('active')) {
+                        const content = dashboardPage.innerHTML.trim();
+                        if (content === '' || content.includes('Loading')) {
+                            addToDebugConsole('⚠️ Blank page detected, running emergency fix...', 'warning');
+                            emergencyFix();
+                        }
+                    }
+                }, 2000);
+            }, 1000);
         });
 
         function setupEventListeners() {
@@ -1175,27 +1199,43 @@
 
         // Page Navigation
         function switchPage(pageName) {
+            // Remove active class from all nav items and pages
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             
-            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
-            document.getElementById(pageName).classList.add('active');
+            // Add active class to selected nav item and page
+            const navItem = document.querySelector(`[data-page="${pageName}"]`);
+            const pageElement = document.getElementById(pageName);
+            
+            if (navItem) navItem.classList.add('active');
+            if (pageElement) pageElement.classList.add('active');
             
             // Load page-specific data
             switch(pageName) {
+                case 'dashboard':
+                    addToDebugConsole('📊 Dashboard loaded', 'info');
+                    break;
                 case 'attendance':
                     refreshAttendanceData();
+                    addToDebugConsole('📅 Attendance page loaded', 'info');
                     break;
                 case 'tasks':
                     refreshTasksData();
+                    addToDebugConsole('📋 Tasks page loaded', 'info');
                     break;
                 case 'admin':
-                    if (currentUser.role === 'admin') {
+                    if (currentUser && currentUser.role === 'admin') {
                         refreshEmployeeData();
+                        addToDebugConsole('⚙️ Admin panel loaded', 'info');
                     }
                     break;
                 case 'profile':
                     loadProfileForm();
+                    addToDebugConsole('👤 Profile page loaded', 'info');
+                    break;
+                case 'debug':
+                    refreshDebugStatus();
+                    addToDebugConsole('🔧 Debug panel loaded', 'info');
                     break;
             }
         }
