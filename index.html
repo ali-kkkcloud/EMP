@@ -604,6 +604,10 @@
                         <i class="fas fa-cog"></i>
                         <span>Admin Panel</span>
                     </div>
+                    <div class="nav-item" data-page="debug">
+                        <i class="fas fa-bug"></i>
+                        <span>Debug Panel</span>
+                    </div>
                     <div class="nav-item" data-page="profile">
                         <i class="fas fa-user"></i>
                         <span>My Profile</span>
@@ -621,25 +625,59 @@
                     </div>
 
                     <div class="dashboard-grid">
-                        <!-- Current Shift Timer -->
+                        <!-- Current Shift Timer WITH DETAILED INFO -->
                         <div class="card">
-                            <h3 style="margin-bottom: 1rem;">Current Shift</h3>
+                            <h3 style="margin-bottom: 1rem;">Current Shift Details</h3>
                             <div class="timer-container">
                                 <div class="timer-circle">
                                     <div class="timer-display" id="currentTime">09:44:12</div>
                                 </div>
-                                <div style="color: var(--success-color); margin-bottom: 1rem;">
-                                    <i class="fas fa-circle" style="font-size: 0.8rem;"></i>
-                                    <span id="shiftStatus">On Shift</span>
+                                
+                                <!-- SHIFT DETAILS -->
+                                <div style="text-align: left; margin-top: 1rem; background: var(--light-bg); padding: 1rem; border-radius: 8px;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                        <div>
+                                            <strong>🕐 Shift Start:</strong><br>
+                                            <span id="shiftStartDisplay">Not started</span>
+                                        </div>
+                                        <div>
+                                            <strong>⏰ Current Time:</strong><br>
+                                            <span id="currentTimeDisplay">--:--:--</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                        <div>
+                                            <strong>⏳ Work Hours:</strong><br>
+                                            <span id="workHoursDisplay" style="color: var(--success-color); font-size: 1.1rem;">00:00:00</span>
+                                        </div>
+                                        <div>
+                                            <strong>☕ Break Time:</strong><br>
+                                            <span id="breakTimeDisplay" style="color: var(--warning-color); font-size: 1.1rem;">00:00:00</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="text-align: center; padding: 0.5rem; background: var(--primary-color); color: white; border-radius: 6px;">
+                                        <strong>📊 Status: </strong><span id="shiftStatus">Ready to Start</span>
+                                    </div>
                                 </div>
+                                
                                 <div class="timer-controls">
-                                    <button class="btn btn-warning" id="breakBtn">
+                                    <button class="btn btn-success" id="startShiftBtn" style="display: inline-flex;">
+                                        <i class="fas fa-play"></i>
+                                        Start Shift
+                                    </button>
+                                    <button class="btn btn-warning" id="breakBtn" style="display: none;">
                                         <i class="fas fa-pause"></i>
                                         Break
                                     </button>
                                     <button class="btn btn-success" id="resumeBtn" style="display: none;">
                                         <i class="fas fa-play"></i>
                                         Resume
+                                    </button>
+                                    <button class="btn btn-danger" id="endShiftBtn" style="display: none;">
+                                        <i class="fas fa-stop"></i>
+                                        End Shift
                                     </button>
                                 </div>
                             </div>
@@ -1036,6 +1074,70 @@
                     </div>
                 </div>
 
+                <!-- Debug Panel -->
+                <div class="page" id="debug">
+                    <div style="margin-bottom: 2rem;">
+                        <h1>🐛 Debug Panel</h1>
+                        <p style="color: var(--text-light);">Test all functionalities and check data flow</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Function Tests -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">🧪 Function Tests</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="testBreakFunction()">
+                                    <i class="fas fa-pause"></i>
+                                    Test Break Function
+                                </button>
+                                <button class="btn btn-success" onclick="testResumeFunction()">
+                                    <i class="fas fa-play"></i>
+                                    Test Resume Function
+                                </button>
+                                <button class="btn btn-warning" onclick="testNotification()">
+                                    <i class="fas fa-bell"></i>
+                                    Test Notifications
+                                </button>
+                                <button class="btn btn-danger" onclick="clearLocalData()">
+                                    <i class="fas fa-trash"></i>
+                                    Clear Local Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Current Status -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">📊 Current Status</h3>
+                            <div id="debugStatus" style="font-family: monospace; background: var(--light-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+                                <div><strong>User:</strong> <span id="debugUser">Loading...</span></div>
+                                <div><strong>Shift Status:</strong> <span id="debugShift">Loading...</span></div>
+                                <div><strong>Break Status:</strong> <span id="debugBreak">Loading...</span></div>
+                                <div><strong>API URL:</strong> <span id="debugAPI">Loading...</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Console Logs -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">📝 Activity Logs</h3>
+                            <div id="debugLogs" style="height: 200px; overflow-y: auto; background: var(--dark-bg); color: white; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem;">
+                                <div>Debug logs will appear here...</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="refreshDebugInfo()" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-sync"></i>
+                                Refresh Debug Info
+                            </button>
+                        </div>
+
+                        <!-- Local Storage Data -->
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">💾 Local Storage</h3>
+                            <div id="debugStorage" style="max-height: 200px; overflow-y: auto; background: var(--light-bg); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem;">
+                                Loading storage data...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Profile Page -->
                 <div class="page" id="profile">
                     <div style="margin-bottom: 2rem;">
@@ -1235,9 +1337,11 @@
             // Theme toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
-            // Break/Resume buttons
+            // Shift management buttons
+            document.getElementById('startShiftBtn').addEventListener('click', startShift);
             document.getElementById('breakBtn').addEventListener('click', takeBreak);
             document.getElementById('resumeBtn').addEventListener('click', resumeShift);
+            document.getElementById('endShiftBtn').addEventListener('click', endShift);
             
             // Add employee form
             document.getElementById('addEmployeeForm').addEventListener('submit', handleAddEmployee);
@@ -1273,10 +1377,19 @@
             // Show admin panel if admin
             if (currentUser.role === 'admin') {
                 document.getElementById('adminNavItem').classList.remove('hidden');
+                // Load employee data for admin
+                updateEmployeeTable();
             }
             
-            // Start shift automatically
-            startShift();
+            // Load user's tasks
+            loadUserTasks();
+            
+            // Don't auto-start shift - let user control it
+            document.getElementById('shiftStatus').textContent = 'Ready to Start';
+            document.getElementById('shiftStartDisplay').textContent = 'Click Start Shift';
+            
+            console.log('🚀 Application loaded for:', currentUser.name);
+            console.log('🎯 Role:', currentUser.role);
         }
 
         // Page Navigation
@@ -1302,15 +1415,64 @@
         }
 
         // Shift Management
+        // Enhanced Shift Management
         function startShift() {
             if (!shiftStartTime) {
                 shiftStartTime = new Date();
+                
+                // Update UI
+                document.getElementById('startShiftBtn').style.display = 'none';
+                document.getElementById('breakBtn').style.display = 'inline-flex';
+                document.getElementById('endShiftBtn').style.display = 'inline-flex';
+                document.getElementById('shiftStatus').textContent = 'Working';
+                document.getElementById('shiftStartDisplay').textContent = shiftStartTime.toLocaleTimeString();
+                
+                // Start the timer
                 updateShiftTimer();
                 shiftInterval = setInterval(updateShiftTimer, 1000);
-                document.getElementById('shiftStatus').textContent = 'On Shift';
                 
-                // Log to Google Sheets (you'll implement this)
+                // Log activity
                 logActivity('shift_start', shiftStartTime);
+                showNotification(`✅ Shift started at ${shiftStartTime.toLocaleTimeString()}`, 'success');
+                
+                console.log('🚀 Shift started at:', shiftStartTime.toLocaleTimeString());
+            }
+        }
+
+        function endShift() {
+            if (shiftStartTime && confirm('Are you sure you want to end your shift?')) {
+                const endTime = new Date();
+                const totalShiftSeconds = Math.floor((endTime - shiftStartTime) / 1000);
+                const workSeconds = totalShiftSeconds - totalBreakTime;
+                
+                // Update UI
+                document.getElementById('startShiftBtn').style.display = 'inline-flex';
+                document.getElementById('breakBtn').style.display = 'none';
+                document.getElementById('resumeBtn').style.display = 'none';
+                document.getElementById('endShiftBtn').style.display = 'none';
+                document.getElementById('shiftStatus').textContent = 'Shift Ended';
+                
+                // Clear timer
+                if (shiftInterval) {
+                    clearInterval(shiftInterval);
+                    shiftInterval = null;
+                }
+                
+                // Log end shift
+                logActivity('shift_end', endTime, workSeconds);
+                
+                // Show summary
+                const workHours = formatDuration(workSeconds);
+                const breakHours = formatDuration(totalBreakTime);
+                
+                showNotification(`🎉 Shift completed! Work: ${workHours}, Break: ${breakHours}`, 'success');
+                
+                // Reset values
+                shiftStartTime = null;
+                totalBreakTime = 0;
+                isOnBreak = false;
+                
+                console.log('✅ Shift ended. Work time:', workHours, 'Break time:', breakHours);
             }
         }
 
@@ -1318,32 +1480,39 @@
             if (!shiftStartTime) return;
             
             const now = new Date();
-            const elapsed = Math.floor((now - shiftStartTime) / 1000) - totalBreakTime;
+            const totalElapsed = Math.floor((now - shiftStartTime) / 1000);
+            const workTime = totalElapsed - totalBreakTime;
+            const currentBreakTime = isOnBreak && breakStartTime ? 
+                Math.floor((now - breakStartTime) / 1000) : 0;
+            const totalBreakToShow = totalBreakTime + currentBreakTime;
             
-            const hours = Math.floor(elapsed / 3600);
-            const minutes = Math.floor((elapsed % 3600) / 60);
-            const seconds = elapsed % 60;
-            
-            document.getElementById('currentTime').textContent = 
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            // Update displays
+            document.getElementById('currentTime').textContent = formatDuration(workTime);
+            document.getElementById('currentTimeDisplay').textContent = now.toLocaleTimeString();
+            document.getElementById('workHoursDisplay').textContent = formatDuration(workTime);
+            document.getElementById('breakTimeDisplay').textContent = formatDuration(totalBreakToShow);
         }
 
         function takeBreak() {
-            if (!isOnBreak) {
+            if (!isOnBreak && shiftStartTime) {
                 isOnBreak = true;
                 breakStartTime = new Date();
                 document.getElementById('breakBtn').style.display = 'none';
                 document.getElementById('resumeBtn').style.display = 'inline-flex';
                 document.getElementById('shiftStatus').textContent = 'On Break';
+                document.getElementById('shiftStatus').style.color = 'var(--warning-color)';
                 
                 logActivity('break_start', breakStartTime);
-                showNotification('Break started. Don\'t forget to resume!', 'info');
+                showNotification(`☕ Break started at ${breakStartTime.toLocaleTimeString()}`, 'warning');
+                
+                console.log('☕ Break started at:', breakStartTime.toLocaleTimeString());
             }
         }
 
         function resumeShift() {
             if (isOnBreak && breakStartTime) {
-                const breakDuration = Math.floor((new Date() - breakStartTime) / 1000);
+                const resumeTime = new Date();
+                const breakDuration = Math.floor((resumeTime - breakStartTime) / 1000);
                 totalBreakTime += breakDuration;
                 
                 isOnBreak = false;
@@ -1351,10 +1520,13 @@
                 
                 document.getElementById('resumeBtn').style.display = 'none';
                 document.getElementById('breakBtn').style.display = 'inline-flex';
-                document.getElementById('shiftStatus').textContent = 'On Shift';
+                document.getElementById('shiftStatus').textContent = 'Working';
+                document.getElementById('shiftStatus').style.color = 'var(--success-color)';
                 
-                logActivity('break_end', new Date(), breakDuration);
-                showNotification('Welcome back! Shift resumed.', 'success');
+                logActivity('break_end', resumeTime, breakDuration);
+                showNotification(`🔄 Resumed at ${resumeTime.toLocaleTimeString()}. Break: ${Math.floor(breakDuration/60)} min`, 'success');
+                
+                console.log('🔄 Break ended. Duration:', Math.floor(breakDuration/60), 'minutes');
             }
         }
 
@@ -1384,22 +1556,178 @@
             }
         }
 
+        // Task Management Functions
         function addNewTask() {
-            const taskText = prompt('Enter new task:');
-            if (taskText) {
-                const taskList = document.getElementById('taskList');
-                const newTask = document.createElement('div');
-                newTask.className = 'task-item';
-                newTask.innerHTML = `
-                    <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
-                    <div class="task-text">
-                        <div style="font-weight: 500;">${taskText}</div>
-                        <div style="font-size: 0.9rem; color: var(--text-light);">Added just now</div>
+            // Create modal for adding task
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); z-index: 1000; 
+                display: flex; align-items: center; justify-content: center;
+            `;
+            
+            modal.innerHTML = `
+                <div class="card" style="width: 90%; max-width: 500px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3>Add New Task</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
                     </div>
-                    <span style="background: var(--primary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">New</span>
+                    
+                    <form id="newTaskForm">
+                        <div class="form-group">
+                            <label class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="newTaskTitle" required placeholder="Enter task title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="newTaskDesc" rows="3" placeholder="Task description (optional)"></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="newTaskDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select class="form-control" id="newTaskPriority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                <i class="fas fa-plus"></i>
+                                Add Task
+                            </button>
+                            <button type="button" onclick="this.closest('.modal').remove()" class="btn" style="flex: 1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+            
+            // Handle form submission
+            document.getElementById('newTaskForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const taskData = {
+                    id: 'T' + Date.now(),
+                    title: document.getElementById('newTaskTitle').value,
+                    description: document.getElementById('newTaskDesc').value,
+                    dueDate: document.getElementById('newTaskDate').value,
+                    priority: document.getElementById('newTaskPriority').value,
+                    status: 'Pending',
+                    employeeId: currentUser.empId,
+                    created: new Date().toISOString()
+                };
+                
+                // Add to task list
+                addTaskToList(taskData);
+                
+                // Save to localStorage
+                const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
+                tasks.push(taskData);
+                localStorage.setItem('userTasks', JSON.stringify(tasks));
+                
+                // Log activity
+                logActivity('task_created', new Date(), null, taskData);
+                
+                modal.remove();
+                showNotification('✅ New task added successfully!', 'success');
+                
+                console.log('📋 New task created:', taskData);
+            });
+        }
+
+        function addTaskToList(taskData) {
+            const taskList = document.getElementById('taskList');
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.dataset.taskId = taskData.id;
+            
+            const priorityColor = {
+                'High': 'var(--danger-color)',
+                'Medium': 'var(--warning-color)', 
+                'Low': 'var(--primary-color)'
+            }[taskData.priority];
+            
+            taskItem.innerHTML = `
+                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this, '${taskData.id}')">
+                <div class="task-text">
+                    <div style="font-weight: 500;">${taskData.title}</div>
+                    <div style="font-size: 0.9rem; color: var(--text-light);">
+                        ${taskData.description ? taskData.description + ' • ' : ''}
+                        Due: ${taskData.dueDate || 'No deadline'}
+                    </div>
+                </div>
+                <span style="background: ${priorityColor}; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
+                    ${taskData.priority}
+                </span>
+            `;
+            
+            taskList.appendChild(taskItem);
+        }
+
+        function toggleTask(checkbox, taskId) {
+            const taskText = checkbox.nextElementSibling;
+            const isCompleted = checkbox.checked;
+            
+            taskText.classList.toggle('completed', isCompleted);
+            
+            // Update task in localStorage
+            const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                tasks[taskIndex].status = isCompleted ? 'Completed' : 'Pending';
+                tasks[taskIndex].completedAt = isCompleted ? new Date().toISOString() : null;
+                localStorage.setItem('userTasks', JSON.stringify(tasks));
+            }
+            
+            // Log activity
+            const status = isCompleted ? 'completed' : 'uncompleted';
+            logActivity(`task_${status}`, new Date(), null, {taskId, title: taskText.querySelector('div').textContent});
+            
+            if (isCompleted) {
+                showNotification('✅ Task completed! Great job.', 'success');
+            }
+            
+            console.log(`📋 Task ${status}:`, taskId);
+        }
+
+        // Load existing tasks on page load
+        function loadUserTasks() {
+            const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
+            const taskList = document.getElementById('taskList');
+            
+            // Clear existing demo tasks
+            taskList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                addTaskToList(task);
+                // If task was completed, check the checkbox
+                if (task.status === 'Completed') {
+                    const checkbox = taskList.querySelector(`[data-task-id="${task.id}"] .task-checkbox`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        checkbox.nextElementSibling.classList.add('completed');
+                    }
+                }
+            });
+            
+            if (tasks.length === 0) {
+                taskList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                        <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <div>No tasks yet. Click "New Task" to add one!</div>
+                    </div>
                 `;
-                taskList.appendChild(newTask);
-                showNotification('New task added successfully!', 'success');
             }
         }
 
@@ -1419,58 +1747,160 @@
             try {
                 // Get form data
                 const formData = {
-                    type: 'employee',
-                    employeeId: document.getElementById('newEmpId').value,
-                    firstName: document.getElementById('newEmpFirstName').value,
-                    lastName: document.getElementById('newEmpLastName').value,
-                    email: document.getElementById('newEmpEmail').value,
+                    empId: document.getElementById('newEmpId').value.trim(),
+                    firstName: document.getElementById('newEmpFirstName').value.trim(),
+                    lastName: document.getElementById('newEmpLastName').value.trim(),
+                    email: document.getElementById('newEmpEmail').value.trim(),
                     department: document.getElementById('newEmpDept').value,
                     role: document.getElementById('newEmpRole').value,
                     joinDate: new Date().toISOString().split('T')[0],
-                    status: 'Active'
+                    status: 'Active',
+                    addedBy: currentUser.empId,
+                    addedAt: new Date().toISOString()
                 };
                 
-                // Send to Google Sheets
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    closeAddEmployee();
-                    showNotification('Employee added successfully!', 'success');
-                    
-                    // Refresh employee list if on admin page
-                    if (document.getElementById('admin').classList.contains('active')) {
-                        loadEmployeeList();
-                    }
-                } else {
-                    showNotification('Error adding employee. Please try again.', 'error');
+                // Validate required fields
+                if (!formData.empId || !formData.firstName || !formData.lastName || !formData.email) {
+                    showNotification('❌ Please fill all required fields', 'error');
+                    return;
                 }
                 
+                // Check if employee ID already exists
+                const existingEmployees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
+                if (existingEmployees.find(emp => emp.empId === formData.empId)) {
+                    showNotification('❌ Employee ID already exists!', 'error');
+                    return;
+                }
+                
+                // Add to local storage
+                existingEmployees.push(formData);
+                localStorage.setItem('companyEmployees', JSON.stringify(existingEmployees));
+                
+                // Add to demo users for login capability
+                demoUsers[formData.empId] = {
+                    password: 'emp123', // Default password
+                    name: `${formData.firstName} ${formData.lastName}`,
+                    role: formData.role,
+                    empId: formData.empId,
+                    department: formData.department
+                };
+                
+                // Send to Google Sheets if configured
+                try {
+                    const sheetData = {
+                        type: 'employee',
+                        employeeId: formData.empId,
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        email: formData.email,
+                        department: formData.department,
+                        role: formData.role,
+                        joinDate: formData.joinDate,
+                        status: formData.status
+                    };
+                    
+                    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_API_URL_HERE') {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(sheetData)
+                        });
+                        
+                        if (response.ok) {
+                            console.log('✅ Employee data sent to Google Sheets');
+                        }
+                    }
+                } catch (error) {
+                    console.log('⚠️ Google Sheets not available, data saved locally');
+                }
+                
+                // Update admin table
+                updateEmployeeTable();
+                
+                // Close modal and show success
+                closeAddEmployee();
+                showNotification(`✅ Employee ${formData.firstName} ${formData.lastName} added successfully!`, 'success');
+                
+                // Log activity
+                logActivity('employee_added', new Date(), null, formData);
+                
+                console.log('👤 New employee added:', formData);
+                console.log('💾 Total employees in database:', existingEmployees.length);
+                
             } catch (error) {
-                console.error('Error adding employee:', error);
-                showNotification('Network error. Please check your connection.', 'error');
+                console.error('❌ Error adding employee:', error);
+                showNotification('❌ Error adding employee. Please try again.', 'error');
             }
         }
         
-        // Load employee list for admin panel
-        async function loadEmployeeList() {
-            try {
-                const employees = await getEmployeeData('Employees');
-                // Update employee table in admin panel
-                // This would populate the admin table with real data
-                console.log('Employee data loaded:', employees);
-            } catch (error) {
-                console.error('Error loading employees:', error);
+        function updateEmployeeTable() {
+            const employees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
+            const tableBody = document.querySelector('#admin table tbody');
+            
+            if (tableBody) {
+                tableBody.innerHTML = employees.map(emp => `
+                    <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 1rem;">${emp.empId}</td>
+                        <td style="padding: 1rem;">${emp.firstName} ${emp.lastName}</td>
+                        <td style="padding: 1rem;">${emp.department}</td>
+                        <td style="padding: 1rem;">
+                            <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
+                                ${emp.status}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;" onclick="editEmployee('${emp.empId}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;" onclick="deleteEmployee('${emp.empId}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                console.log('📊 Employee table updated with', employees.length, 'employees');
+            }
+        }
+        
+        function editEmployee(empId) {
+            showNotification('🔧 Edit functionality will be available in next update!', 'info');
+        }
+        
+        function deleteEmployee(empId) {
+            if (confirm(`Are you sure you want to delete employee ${empId}?`)) {
+                const employees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
+                const updatedEmployees = employees.filter(emp => emp.empId !== empId);
+                localStorage.setItem('companyEmployees', JSON.stringify(updatedEmployees));
+                
+                // Remove from demo users
+                delete demoUsers[empId];
+                
+                updateEmployeeTable();
+                showNotification('✅ Employee deleted successfully!', 'success');
+                
+                console.log('🗑️ Employee deleted:', empId);
             }
         }
 
-        // Google Sheets Integration Functions
+        // Simplified Google Sheets Integration with Debug Mode
         async function logActivity(type, timestamp, duration = null) {
+            // Debug mode - log to console first
+            const debugData = {
+                type: type,
+                employeeId: currentUser?.empId || 'unknown',
+                name: currentUser?.name || 'unknown',
+                timestamp: timestamp.toISOString(),
+                duration: duration,
+                readable_time: timestamp.toLocaleString()
+            };
+            
+            console.log('🔥 Activity Logged:', debugData);
+            
+            // Show in notification for immediate feedback
+            showNotification(`✅ ${type} logged at ${timestamp.toLocaleTimeString()}`, 'success');
+            
+            // Try to send to Google Sheets (if configured)
             try {
                 let data = {};
                 
@@ -1483,8 +1913,8 @@
                         name: currentUser.name,
                         loginTime: type === 'shift_start' ? timestamp.toTimeString().split(' ')[0] : '',
                         logoutTime: type === 'shift_end' ? timestamp.toTimeString().split(' ')[0] : '',
-                        totalHours: '',
-                        breakDuration: duration ? formatDuration(duration) : '',
+                        totalHours: duration ? formatDuration(duration) : '',
+                        breakDuration: totalBreakTime ? formatDuration(totalBreakTime) : '',
                         status: 'Present'
                     };
                 } else if (type === 'break_start' || type === 'break_end') {
@@ -1499,27 +1929,39 @@
                     };
                 }
                 
-                // Send data to Google Apps Script
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
+                console.log('📤 Sending to Google Sheets:', data);
                 
-                if (response.ok) {
-                    console.log('Activity logged successfully:', data);
+                // Only try API call if URL is properly configured
+                if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_API_URL_HERE') {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Data sent to Google Sheets successfully');
+                        showNotification('✅ Data saved to database!', 'success');
+                    } else {
+                        console.error('❌ Google Sheets API Error:', response.statusText);
+                        showNotification('⚠️ Saved locally, sync pending', 'warning');
+                    }
                 } else {
-                    console.error('Error logging activity:', response.statusText);
+                    console.log('⚠️ Google Apps Script URL not configured - data logged locally only');
+                    showNotification('⚠️ Demo mode - data not saved to sheets', 'warning');
                 }
                 
             } catch (error) {
-                console.error('Error logging to Google Sheets:', error);
+                console.error('❌ Error logging to Google Sheets:', error);
+                showNotification('⚠️ Network error - data saved locally', 'warning');
+                
                 // Store locally if network fails
                 const localLog = JSON.parse(localStorage.getItem('offlineLog') || '[]');
-                localLog.push({type, timestamp: timestamp.toISOString(), duration});
+                localLog.push({type, timestamp: timestamp.toISOString(), duration, employee: currentUser?.empId});
                 localStorage.setItem('offlineLog', JSON.stringify(localLog));
+                console.log('💾 Data stored locally:', localLog);
             }
         }
         
@@ -1612,11 +2054,97 @@
             }
         }
 
+        // Debug Functions
+        function testBreakFunction() {
+            console.log('🧪 Testing Break Function...');
+            addDebugLog('Testing Break Function...');
+            takeBreak();
+            addDebugLog('Break function executed');
+        }
+        
+        function testResumeFunction() {
+            console.log('🧪 Testing Resume Function...');
+            addDebugLog('Testing Resume Function...');
+            resumeShift();
+            addDebugLog('Resume function executed');
+        }
+        
+        function testNotification() {
+            console.log('🧪 Testing Notification...');
+            addDebugLog('Testing Notification System...');
+            showNotification('🧪 Test notification - All systems working!', 'info');
+        }
+        
+        function clearLocalData() {
+            localStorage.clear();
+            addDebugLog('Local storage cleared');
+            showNotification('Local data cleared!', 'success');
+            refreshDebugInfo();
+        }
+        
+        function addDebugLog(message) {
+            const debugLogs = document.getElementById('debugLogs');
+            if (debugLogs) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.innerHTML = `<span style="color: #10b981;">[${timestamp}]</span> ${message}`;
+                debugLogs.appendChild(logEntry);
+                debugLogs.scrollTop = debugLogs.scrollHeight;
+            }
+        }
+        
+        function refreshDebugInfo() {
+            // Update debug status
+            document.getElementById('debugUser').textContent = currentUser ? currentUser.name : 'Not logged in';
+            document.getElementById('debugShift').textContent = shiftStartTime ? 'Active' : 'Not started';
+            document.getElementById('debugBreak').textContent = isOnBreak ? 'On Break' : 'Working';
+            document.getElementById('debugAPI').textContent = APPS_SCRIPT_URL || 'Not configured';
+            
+            // Update storage info
+            const storageDiv = document.getElementById('debugStorage');
+            const storageData = {
+                currentUser: localStorage.getItem('currentUser'),
+                currentSession: localStorage.getItem('currentSession'),
+                offlineLog: localStorage.getItem('offlineLog'),
+                darkMode: localStorage.getItem('darkMode')
+            };
+            
+            storageDiv.innerHTML = '<pre>' + JSON.stringify(storageData, null, 2) + '</pre>';
+            
+            addDebugLog('Debug info refreshed');
+        }
+        
         // Load saved theme
         const savedTheme = localStorage.getItem('darkMode');
         if (savedTheme === 'true') {
             toggleTheme();
         }
+
+        // Auto-save functionality (optional)
+        setInterval(() => {
+            if (currentUser && shiftStartTime) {
+                // Auto-save current session data
+                const sessionData = {
+                    user: currentUser,
+                    shiftStart: shiftStartTime.toISOString(),
+                    totalBreak: totalBreakTime,
+                    isOnBreak: isOnBreak
+                };
+                localStorage.setItem('currentSession', JSON.stringify(sessionData));
+                console.log('💾 Session auto-saved');
+            }
+        }, 30000); // Save every 30 seconds
+        
+        // Initialize debug panel when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (document.getElementById('debugLogs')) {
+                    addDebugLog('🚀 Employee Portal Debug Panel Initialized');
+                    addDebugLog('Website loaded successfully');
+                    refreshDebugInfo();
+                }
+            }, 1000);
+        });
 
         // Auto-save functionality (optional)
         setInterval(() => {
