@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Portal - Modern HRMS</title>
+    <title>Employee Portal - Google Sheets Integration</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -85,7 +84,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            position: relative;
         }
 
         .avatar {
@@ -187,22 +185,6 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 1rem 0;
-        }
-
-        .stat-label {
-            color: var(--text-light);
-            font-size: 0.9rem;
         }
 
         /* Timer */
@@ -307,135 +289,6 @@
             color: white;
         }
 
-        /* Calendar */
-        .calendar {
-            margin-top: 1rem;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background: var(--border-light);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .calendar-day {
-            background: var(--light-card);
-            padding: 1rem;
-            text-align: center;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        body.dark-mode .calendar-day {
-            background: var(--dark-card);
-        }
-
-        .calendar-day.present {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success-color);
-        }
-
-        .calendar-day.absent {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger-color);
-        }
-
-        .calendar-day.half-day {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning-color);
-        }
-
-        /* Tasks */
-        .task-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-light);
-            transition: all 0.3s ease;
-        }
-
-        .task-item:hover {
-            background: rgba(79, 70, 229, 0.05);
-        }
-
-        .task-checkbox {
-            width: 20px;
-            height: 20px;
-        }
-
-        .task-text {
-            flex: 1;
-        }
-
-        .task-text.completed {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-
-        /* Training */
-        .training-module {
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-
-        .module-header {
-            padding: 1rem;
-            background: var(--light-bg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        body.dark-mode .module-header {
-            background: var(--dark-bg);
-        }
-
-        .module-content {
-            padding: 1rem;
-            display: none;
-        }
-
-        .module-content.active {
-            display: block;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border-light);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 1rem 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--success-color);
-            transition: width 0.3s ease;
-        }
-
         /* Notifications */
         .notification {
             position: fixed;
@@ -478,6 +331,43 @@
             max-width: 400px;
         }
 
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background: var(--success-color); }
+        .status-break { background: var(--warning-color); }
+        .status-offline { background: var(--text-light); }
+
+        /* Connection status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: var(--success-color);
+        }
+
+        .connection-status.disconnected {
+            background: var(--danger-color);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -502,29 +392,16 @@
             }
         }
 
-        .hidden {
-            display: none !important;
-        }
-
-        /* Animation classes */
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-
-        .scale-in {
-            animation: scaleIn 0.3s ease;
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <!-- Login Page -->
     <div id="loginPage" class="login-container">
-        <div class="login-form scale-in">
+        <div class="login-form">
             <div style="text-align: center; margin-bottom: 2rem;">
                 <i class="fas fa-building" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
                 <h2 style="color: var(--text-dark);">Employee Portal</h2>
@@ -542,16 +419,14 @@
                     <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i>
                     Sign In
                 </button>
             </form>
             
             <div style="margin-top: 2rem; text-align: center;">
-                <small style="color: var(--text-light);">Demo Accounts:</small><br>
-                <small>Admin: admin / admin123</small><br>
-                <small>Employee: emp001 / emp123</small>
+                <small style="color: var(--text-light);">Demo Account: admin / admin123</small>
             </div>
         </div>
     </div>
@@ -588,10 +463,6 @@
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </div>
-                    <div class="nav-item" data-page="training">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span>Training Center</span>
-                    </div>
                     <div class="nav-item" data-page="attendance">
                         <i class="fas fa-calendar-check"></i>
                         <span>Attendance</span>
@@ -603,10 +474,6 @@
                     <div class="nav-item hidden" data-page="admin" id="adminNavItem">
                         <i class="fas fa-cog"></i>
                         <span>Admin Panel</span>
-                    </div>
-                    <div class="nav-item" data-page="debug">
-                        <i class="fas fa-bug"></i>
-                        <span>Debug Panel</span>
                     </div>
                     <div class="nav-item" data-page="profile">
                         <i class="fas fa-user"></i>
@@ -625,15 +492,17 @@
                     </div>
 
                     <div class="dashboard-grid">
-                        <!-- Current Shift Timer WITH DETAILED INFO -->
+                        <!-- Current Shift Timer -->
                         <div class="card">
-                            <h3 style="margin-bottom: 1rem;">Current Shift Details</h3>
+                            <h3 style="margin-bottom: 1rem;">
+                                <span class="status-indicator" id="shiftStatusIndicator"></span>
+                                Current Shift
+                            </h3>
                             <div class="timer-container">
                                 <div class="timer-circle">
-                                    <div class="timer-display" id="currentTime">09:44:12</div>
+                                    <div class="timer-display" id="currentTime">00:00:00</div>
                                 </div>
                                 
-                                <!-- SHIFT DETAILS -->
                                 <div style="text-align: left; margin-top: 1rem; background: var(--light-bg); padding: 1rem; border-radius: 8px;">
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                         <div>
@@ -663,7 +532,7 @@
                                 </div>
                                 
                                 <div class="timer-controls">
-                                    <button class="btn btn-success" id="startShiftBtn" style="display: inline-flex;">
+                                    <button class="btn btn-success" id="startShiftBtn">
                                         <i class="fas fa-play"></i>
                                         Start Shift
                                     </button>
@@ -686,125 +555,52 @@
                         <!-- Today's Schedule -->
                         <div class="card">
                             <h3 style="margin-bottom: 1rem;">Today's Schedule</h3>
-                            <div class="task-list">
-                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%;"></div>
-                                    <div>
-                                        <div style="font-weight: 500;">09:00-10:00</div>
-                                        <div style="font-size: 0.9rem; color: var(--text-light);">Weekly team Meeting</div>
-                                    </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%;"></div>
+                                <div>
+                                    <div style="font-weight: 500;">09:00-10:00</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Weekly Team Meeting</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
-                                    <div>
-                                        <div style="font-weight: 500;">11:00-12:30</div>
-                                        <div style="font-size: 0.9rem; color: var(--text-light);">Client Call</div>
-                                    </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                                <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
+                                <div>
+                                    <div style="font-weight: 500;">11:00-12:30</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Client Call</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0;">
-                                    <div style="width: 12px; height: 12px; background: var(--text-light); border-radius: 50%;"></div>
-                                    <div>
-                                        <div style="font-weight: 500;">13:00-17:00</div>
-                                        <div style="font-size: 0.9rem; color: var(--text-light);">Project Work</div>
-                                    </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0;">
+                                <div style="width: 12px; height: 12px; background: var(--text-light); border-radius: 50%;"></div>
+                                <div>
+                                    <div style="font-weight: 500;">13:00-17:00</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-light);">Project Work</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Training Status -->
+                        <!-- Live Activity Feed -->
                         <div class="card">
-                            <h3 style="margin-bottom: 1rem;">Training Status</h3>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%;"></div>
-                            </div>
-                            <div style="margin-top: 1rem;">
-                                <div style="font-weight: 500;">New Employee Onboarding</div>
-                                <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">Complete By Jun 30</div>
+                            <h3 style="margin-bottom: 1rem;">Live Activity Feed</h3>
+                            <div id="activityFeed" style="max-height: 200px; overflow-y: auto;">
+                                <div style="text-align: center; color: var(--text-light); padding: 2rem;">
+                                    No recent activity
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Notifications -->
+                        <!-- Connection Status */
                         <div class="card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3>Notifications</h3>
-                                <i class="fas fa-bell" style="color: var(--warning-color);"></i>
-                            </div>
-                            <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px; border-left: 4px solid var(--warning-color);">
-                                <div style="font-weight: 500;">Your shift starts in 30 mins</div>
-                                <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.25rem;">Don't forget to login!</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Training Center Page -->
-                <div class="page" id="training">
-                    <div style="margin-bottom: 2rem;">
-                        <h1>Training Center</h1>
-                        <p style="color: var(--text-light);">Complete your training modules and enhance your skills</p>
-                    </div>
-
-                    <div class="training-module">
-                        <div class="module-header" onclick="toggleModule(this)">
-                            <div>
-                                <h3>New Employee Onboarding</h3>
-                                <small style="color: var(--text-light);">5 lessons • 2 hours</small>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="color: var(--success-color);">75% Complete</div>
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-                        <div class="module-content">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%;"></div>
-                            </div>
-                            <div style="margin-top: 1rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <span>1. Company Introduction</span>
-                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                            <h3 style="margin-bottom: 1rem;">System Status</h3>
+                            <div id="systemStatus">
+                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span>Google Sheets:</span>
+                                    <span id="sheetsStatus" style="color: var(--text-light);">Checking...</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <span>2. HR Policies</span>
-                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <span>3. Safety Guidelines</span>
-                                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
-                                    <span>4. System Training</span>
-                                    <i class="fas fa-play-circle" style="color: var(--primary-color);"></i>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;">
-                                    <span>5. Final Assessment</span>
-                                    <i class="fas fa-lock" style="color: var(--text-light);"></i>
+                                <div style="display: flex; justify-content: between; align-items: center;">
+                                    <span>Last Sync:</span>
+                                    <span id="lastSync" style="color: var(--text-light);">Never</span>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" style="margin-top: 1rem;">
-                                <i class="fas fa-play"></i>
-                                Continue Training
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="training-module">
-                        <div class="module-header" onclick="toggleModule(this)">
-                            <div>
-                                <h3>Advanced Excel Training</h3>
-                                <small style="color: var(--text-light);">8 lessons • 4 hours</small>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="color: var(--text-light);">Not Started</div>
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                        </div>
-                        <div class="module-content">
-                            <p style="color: var(--text-light); margin-bottom: 1rem;">Master advanced Excel functions and data analysis techniques.</p>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-play"></i>
-                                Start Training
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -812,118 +608,21 @@
                 <!-- Attendance Page -->
                 <div class="page" id="attendance">
                     <div style="margin-bottom: 2rem;">
-                        <h1>Attendance</h1>
-                        <p style="color: var(--text-light);">Track your attendance and view monthly reports</p>
+                        <h1>Attendance Records</h1>
+                        <p style="color: var(--text-light);">View all attendance data synced with Google Sheets</p>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
-                        <div class="card">
-                            <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <button class="btn" style="background: transparent; padding: 0.5rem;">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <h3>June 2024</h3>
-                                <button class="btn" style="background: transparent; padding: 0.5rem;">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="calendar-grid">
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Su</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Mo</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Tu</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">We</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Th</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Fr</div>
-                                <div class="calendar-day" style="font-weight: bold; background: var(--light-bg);">Sa</div>
-                                
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day">1</div>
-                                
-                                <div class="calendar-day">2</div>
-                                <div class="calendar-day present">3</div>
-                                <div class="calendar-day present">4</div>
-                                <div class="calendar-day present">5</div>
-                                <div class="calendar-day present">6</div>
-                                <div class="calendar-day present">7</div>
-                                <div class="calendar-day">8</div>
-                                
-                                <div class="calendar-day">9</div>
-                                <div class="calendar-day present">10</div>
-                                <div class="calendar-day present">11</div>
-                                <div class="calendar-day absent">12</div>
-                                <div class="calendar-day present">13</div>
-                                <div class="calendar-day half-day">14</div>
-                                <div class="calendar-day">15</div>
-                                
-                                <div class="calendar-day">16</div>
-                                <div class="calendar-day present">17</div>
-                                <div class="calendar-day present">18</div>
-                                <div class="calendar-day present">19</div>
-                                <div class="calendar-day present">20</div>
-                                <div class="calendar-day present">21</div>
-                                <div class="calendar-day">22</div>
-                                
-                                <div class="calendar-day">23</div>
-                                <div class="calendar-day present">24</div>
-                                <div class="calendar-day present">25</div>
-                                <div class="calendar-day present">26</div>
-                                <div class="calendar-day present">27</div>
-                                <div class="calendar-day present">28</div>
-                                <div class="calendar-day">29</div>
-                                
-                                <div class="calendar-day">30</div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                                <div class="calendar-day"></div>
-                            </div>
+                    <div class="card">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Recent Attendance</h3>
+                            <button class="btn btn-primary" onclick="refreshAttendanceData()">
+                                <i class="fas fa-sync"></i>
+                                Refresh
+                            </button>
                         </div>
-
-                        <div>
-                            <div class="card" style="margin-bottom: 1rem;">
-                                <h3 style="margin-bottom: 1rem;">Attendance Legend</h3>
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
-                                    <span>Present</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <div style="width: 12px; height: 12px; background: var(--danger-color); border-radius: 50%;"></div>
-                                    <span>Absent</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div style="width: 12px; height: 12px; background: var(--warning-color); border-radius: 50%;"></div>
-                                    <span>Half Day</span>
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <h3 style="margin-bottom: 1rem;">Statistics</h3>
-                                <div style="margin-bottom: 1rem;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span>Present Days</span>
-                                        <strong style="color: var(--success-color);">18</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span>Absent Days</span>
-                                        <strong style="color: var(--danger-color);">1</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span>Half Days</span>
-                                        <strong style="color: var(--warning-color);">1</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span>Attendance %</span>
-                                        <strong style="color: var(--primary-color);">90%</strong>
-                                    </div>
-                                </div>
+                        <div id="attendanceTable">
+                            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                                Loading attendance data...
                             </div>
                         </div>
                     </div>
@@ -934,7 +633,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <div>
                             <h1>Tasks</h1>
-                            <p style="color: var(--text-light);">Manage your daily tasks and assignments</p>
+                            <p style="color: var(--text-light);">Manage your tasks synced with Google Sheets</p>
                         </div>
                         <button class="btn btn-primary" onclick="addNewTask()">
                             <i class="fas fa-plus"></i>
@@ -943,41 +642,9 @@
                     </div>
 
                     <div class="card">
-                        <div class="task-list" id="taskList">
-                            <div class="task-item">
-                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
-                                <div class="task-text">
-                                    <div style="font-weight: 500;">Finalize Project Plan</div>
-                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Today 5:00 PM</div>
-                                </div>
-                                <span style="background: var(--danger-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">High</span>
-                            </div>
-                            
-                            <div class="task-item">
-                                <input type="checkbox" class="task-checkbox" checked onchange="toggleTask(this)">
-                                <div class="task-text completed">
-                                    <div style="font-weight: 500;">Review Client Feedback</div>
-                                    <div style="font-size: 0.9rem; color: var(--text-light);">Completed 2 hours ago</div>
-                                </div>
-                                <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Done</span>
-                            </div>
-                            
-                            <div class="task-item">
-                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
-                                <div class="task-text">
-                                    <div style="font-weight: 500;">Update Documentation</div>
-                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Tomorrow 12:00 PM</div>
-                                </div>
-                                <span style="background: var(--warning-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Medium</span>
-                            </div>
-                            
-                            <div class="task-item">
-                                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this)">
-                                <div class="task-text">
-                                    <div style="font-weight: 500;">Prepare Weekly Report</div>
-                                    <div style="font-size: 0.9rem; color: var(--text-light);">Due: Friday 3:00 PM</div>
-                                </div>
-                                <span style="background: var(--primary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Low</span>
+                        <div id="taskList">
+                            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                                Loading tasks...
                             </div>
                         </div>
                     </div>
@@ -987,48 +654,34 @@
                 <div class="page" id="admin">
                     <div style="margin-bottom: 2rem;">
                         <h1>Admin Panel</h1>
-                        <p style="color: var(--text-light);">Manage employees, schedules, and system settings</p>
+                        <p style="color: var(--text-light);">Manage employees and view system data</p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                         <div class="card">
                             <h3 style="margin-bottom: 1rem;">Employee Management</h3>
                             <div style="display: flex; gap: 1rem;">
-                                <button class="btn btn-primary" onclick="showAddEmployee()">
+                                <button class="btn btn-primary" onclick="addNewEmployee()">
                                     <i class="fas fa-plus"></i>
                                     Add Employee
                                 </button>
-                                <button class="btn btn-warning">
-                                    <i class="fas fa-edit"></i>
-                                    Edit Employee
+                                <button class="btn btn-success" onclick="refreshEmployeeData()">
+                                    <i class="fas fa-sync"></i>
+                                    Refresh Data
                                 </button>
                             </div>
                         </div>
 
                         <div class="card">
-                            <h3 style="margin-bottom: 1rem;">Reports & Analytics</h3>
+                            <h3 style="margin-bottom: 1rem;">Data Sync</h3>
                             <div style="display: flex; gap: 1rem;">
-                                <button class="btn btn-success">
-                                    <i class="fas fa-download"></i>
-                                    Download Report
+                                <button class="btn btn-warning" onclick="syncAllData()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    Sync All Data
                                 </button>
-                                <button class="btn btn-primary">
-                                    <i class="fas fa-chart-bar"></i>
-                                    View Analytics
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <h3 style="margin-bottom: 1rem;">System Settings</h3>
-                            <div style="display: flex; gap: 1rem;">
-                                <button class="btn btn-primary">
-                                    <i class="fas fa-cog"></i>
-                                    Settings
-                                </button>
-                                <button class="btn btn-warning">
-                                    <i class="fas fa-database"></i>
-                                    Backup Data
+                                <button class="btn btn-primary" onclick="viewGoogleSheet()">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    View Sheet
                                 </button>
                             </div>
                         </div>
@@ -1036,103 +689,9 @@
 
                     <div class="card">
                         <h3 style="margin-bottom: 1rem;">Employee List</h3>
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <thead>
-                                    <tr style="border-bottom: 2px solid var(--border-light);">
-                                        <th style="padding: 1rem; text-align: left;">ID</th>
-                                        <th style="padding: 1rem; text-align: left;">Name</th>
-                                        <th style="padding: 1rem; text-align: left;">Department</th>
-                                        <th style="padding: 1rem; text-align: left;">Status</th>
-                                        <th style="padding: 1rem; text-align: left;">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr style="border-bottom: 1px solid var(--border-light);">
-                                        <td style="padding: 1rem;">EMP001</td>
-                                        <td style="padding: 1rem;">John Doe</td>
-                                        <td style="padding: 1rem;">Development</td>
-                                        <td style="padding: 1rem;"><span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Active</span></td>
-                                        <td style="padding: 1rem;">
-                                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid var(--border-light);">
-                                        <td style="padding: 1rem;">EMP002</td>
-                                        <td style="padding: 1rem;">Jane Smith</td>
-                                        <td style="padding: 1rem;">Marketing</td>
-                                        <td style="padding: 1rem;"><span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Active</span></td>
-                                        <td style="padding: 1rem;">
-                                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Debug Panel -->
-                <div class="page" id="debug">
-                    <div style="margin-bottom: 2rem;">
-                        <h1>🐛 Debug Panel</h1>
-                        <p style="color: var(--text-light);">Test all functionalities and check data flow</p>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                        <!-- Function Tests -->
-                        <div class="card">
-                            <h3 style="margin-bottom: 1rem;">🧪 Function Tests</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <button class="btn btn-primary" onclick="testBreakFunction()">
-                                    <i class="fas fa-pause"></i>
-                                    Test Break Function
-                                </button>
-                                <button class="btn btn-success" onclick="testResumeFunction()">
-                                    <i class="fas fa-play"></i>
-                                    Test Resume Function
-                                </button>
-                                <button class="btn btn-warning" onclick="testNotification()">
-                                    <i class="fas fa-bell"></i>
-                                    Test Notifications
-                                </button>
-                                <button class="btn btn-danger" onclick="clearLocalData()">
-                                    <i class="fas fa-trash"></i>
-                                    Clear Local Data
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Current Status -->
-                        <div class="card">
-                            <h3 style="margin-bottom: 1rem;">📊 Current Status</h3>
-                            <div id="debugStatus" style="font-family: monospace; background: var(--light-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
-                                <div><strong>User:</strong> <span id="debugUser">Loading...</span></div>
-                                <div><strong>Shift Status:</strong> <span id="debugShift">Loading...</span></div>
-                                <div><strong>Break Status:</strong> <span id="debugBreak">Loading...</span></div>
-                                <div><strong>API URL:</strong> <span id="debugAPI">Loading...</span></div>
-                            </div>
-                        </div>
-
-                        <!-- Console Logs -->
-                        <div class="card">
-                            <h3 style="margin-bottom: 1rem;">📝 Activity Logs</h3>
-                            <div id="debugLogs" style="height: 200px; overflow-y: auto; background: var(--dark-bg); color: white; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem;">
-                                <div>Debug logs will appear here...</div>
-                            </div>
-                            <button class="btn btn-primary" onclick="refreshDebugInfo()" style="margin-top: 1rem; width: 100%;">
-                                <i class="fas fa-sync"></i>
-                                Refresh Debug Info
-                            </button>
-                        </div>
-
-                        <!-- Local Storage Data -->
-                        <div class="card">
-                            <h3 style="margin-bottom: 1rem;">💾 Local Storage</h3>
-                            <div id="debugStorage" style="max-height: 200px; overflow-y: auto; background: var(--light-bg); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem;">
-                                Loading storage data...
+                        <div id="employeeTable">
+                            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                                Loading employee data...
                             </div>
                         </div>
                     </div>
@@ -1142,17 +701,17 @@
                 <div class="page" id="profile">
                     <div style="margin-bottom: 2rem;">
                         <h1>My Profile</h1>
-                        <p style="color: var(--text-light);">Manage your personal information and settings</p>
+                        <p style="color: var(--text-light);">Manage your personal information</p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="card" style="text-align: center;">
-                            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; margin: 0 auto 1rem;">
+                            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; margin: 0 auto 1rem;" id="profileAvatar">
                                 JD
                             </div>
-                            <h3>John Doe</h3>
-                            <p style="color: var(--text-light);">Software Developer</p>
-                            <p style="color: var(--text-light); font-size: 0.9rem;">Department: Development</p>
+                            <h3 id="profileName">John Doe</h3>
+                            <p style="color: var(--text-light);" id="profileRole">Software Developer</p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;" id="profileDept">Department: Development</p>
                             
                             <button class="btn btn-danger" style="width: 100%; margin-top: 2rem;" onclick="logout()">
                                 <i class="fas fa-sign-out-alt"></i>
@@ -1162,48 +721,11 @@
 
                         <div class="card">
                             <h3 style="margin-bottom: 1.5rem;">Personal Information</h3>
-                            <form>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                    <div class="form-group">
-                                        <label class="form-label">First Name</label>
-                                        <input type="text" class="form-control" value="John">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Last Name</label>
-                                        <input type="text" class="form-control" value="Doe">
-                                    </div>
+                            <div id="profileForm">
+                                <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                                    Loading profile data...
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Employee ID</label>
-                                    <input type="text" class="form-control" value="EMP001" readonly>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" value="john.doe@company.com">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Phone</label>
-                                    <input type="tel" class="form-control" value="+1 (555) 123-4567">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Department</label>
-                                    <select class="form-control">
-                                        <option>Development</option>
-                                        <option>Marketing</option>
-                                        <option>Sales</option>
-                                        <option>HR</option>
-                                    </select>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i>
-                                    Save Changes
-                                </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1211,69 +733,16 @@
         </div>
     </div>
 
-    <!-- Add Employee Modal (for admin) -->
-    <div id="addEmployeeModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
-        <div class="card" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3>Add New Employee</h3>
-                <button onclick="closeAddEmployee()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
-            
-            <form id="addEmployeeForm">
-                <div class="form-group">
-                    <label class="form-label">Employee ID</label>
-                    <input type="text" class="form-control" id="newEmpId" required>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="newEmpFirstName" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="newEmpLastName" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="newEmpEmail" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Department</label>
-                    <select class="form-control" id="newEmpDept" required>
-                        <option value="">Select Department</option>
-                        <option value="Development">Development</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Sales">Sales</option>
-                        <option value="HR">HR</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Role</label>
-                    <select class="form-control" id="newEmpRole" required>
-                        <option value="">Select Role</option>
-                        <option value="employee">Employee</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        <i class="fas fa-plus"></i>
-                        Add Employee
-                    </button>
-                    <button type="button" class="btn" onclick="closeAddEmployee()" style="flex: 1;">Cancel</button>
-                </div>
-            </form>
-        </div>
+    <!-- Connection Status Indicator -->
+    <div id="connectionStatus" class="connection-status disconnected">
+        <i class="fas fa-wifi"></i> Checking connection...
     </div>
 
     <script>
+        // Google Sheets Configuration
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfo_Re6lvoGamnUuTosU9eBeeJclILrSZ-rTRpJxJEg0JH9z4GTSgjl6hfhcOHazLWUA/exec';
+        const SHEET_ID = '15pNN3vIuLFug6nlL-GN0uwvkasLokGwPO5kTxmPIZZw';
+
         // Application State
         let currentUser = null;
         let shiftStartTime = null;
@@ -1282,44 +751,23 @@
         let totalBreakTime = 0;
         let shiftInterval = null;
         let isDarkMode = false;
-
-        // Demo users (in real app, this would come from your database)
-        const demoUsers = {
-            'admin': { 
-                password: 'admin123', 
-                name: 'Admin User', 
-                role: 'admin',
-                empId: 'admin',
-                department: 'Administration'
-            },
-            'emp001': { 
-                password: 'emp123', 
-                name: 'John Doe', 
-                role: 'employee',
-                empId: 'emp001',
-                department: 'Development'
-            }
-        };
-
-        // Google Apps Script Integration
-        const APPS_SCRIPT_URL = 'https://script.googleusercontent.com/a/macros/cautio.in/echo?user_content_key=AehSKLjpRzxyuKTHtypnFr9_R5JqQ-qiOsjlUOG1E1gB_bKgFjhQb4i5t6QreUtyiZ1WNImdfvBJeibLN61xKIZvPmMndNbq9gs9Xyxw3_XE2h13DhpO8hIjhCJpyJpraLwGbgaax5fQuAguEniGqeybXRi16XYgxOJqRFirYF_U9fLplXktqPy2XMQcOxhHtk75xUJJ-Ey3tyNoK4coIo2yg_ePErpwkSgG-asQ2HI6Ba1hNGAUfq9gvHB4HNGqxaMw9XyDEeYv-MMhxr1oRM-bHZ2LGovF5jQxWTo-Fu0s4L3frQM7nW4&lib=MGvtdDtm4WlQ3Yk9t-n6uOe_CXYMEez4V';
-        const SHEET_ID = '15pNN3vIuLFug6nlL-GN0uwvkasLokGwPO5kTxmPIZZw';
+        let isConnected = false;
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in
+            setupEventListeners();
+            checkConnection();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(checkConnection, 30000); // Check connection every 30 seconds
+            
+            // Try to restore session
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 showMainApp();
+                restoreSession();
             }
-
-            // Add event listeners
-            setupEventListeners();
-            
-            // Start real-time clock
-            updateClock();
-            setInterval(updateClock, 1000);
         });
 
         function setupEventListeners() {
@@ -1342,24 +790,112 @@
             document.getElementById('breakBtn').addEventListener('click', takeBreak);
             document.getElementById('resumeBtn').addEventListener('click', resumeShift);
             document.getElementById('endShiftBtn').addEventListener('click', endShift);
-            
-            // Add employee form
-            document.getElementById('addEmployeeForm').addEventListener('submit', handleAddEmployee);
         }
 
-        // Login Function
-        function handleLogin(e) {
+        // Connection Management
+        async function checkConnection() {
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=ping', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    setConnectionStatus(true);
+                    updateSystemStatus('Connected', new Date().toLocaleTimeString());
+                } else {
+                    setConnectionStatus(false);
+                    updateSystemStatus('Error', 'Connection failed');
+                }
+            } catch (error) {
+                setConnectionStatus(false);
+                updateSystemStatus('Offline', 'No internet connection');
+            }
+        }
+
+        function setConnectionStatus(connected) {
+            isConnected = connected;
+            const statusEl = document.getElementById('connectionStatus');
+            const sheetsStatusEl = document.getElementById('sheetsStatus');
+            
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusEl.innerHTML = '<i class="fas fa-wifi"></i> Connected';
+                if (sheetsStatusEl) sheetsStatusEl.textContent = 'Connected';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '<i class="fas fa-wifi"></i> Offline';
+                if (sheetsStatusEl) sheetsStatusEl.textContent = 'Offline';
+            }
+        }
+
+        function updateSystemStatus(status, lastSync) {
+            const sheetsStatusEl = document.getElementById('sheetsStatus');
+            const lastSyncEl = document.getElementById('lastSync');
+            
+            if (sheetsStatusEl) sheetsStatusEl.textContent = status;
+            if (lastSyncEl) lastSyncEl.textContent = lastSync;
+        }
+
+        // Authentication
+        async function handleLogin(e) {
             e.preventDefault();
+            const loginBtn = document.getElementById('loginBtn');
             const empId = document.getElementById('employeeId').value.trim();
             const password = document.getElementById('password').value;
             
-            if (demoUsers[empId] && demoUsers[empId].password === password) {
-                currentUser = demoUsers[empId];
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                showMainApp();
-                showNotification('Login successful! Welcome back.', 'success');
-            } else {
-                showNotification('Invalid credentials. Please try again.', 'error');
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+            loginBtn.disabled = true;
+            
+            try {
+                // Check with Google Sheets
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        employeeId: empId,
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentUser = {
+                        empId: empId,
+                        name: result.name,
+                        role: result.role || 'employee',
+                        department: result.department || 'General'
+                    };
+                    
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showMainApp();
+                    showNotification('Login successful! Welcome back.', 'success');
+                    
+                    // Log the login activity
+                    await logActivity('login', new Date());
+                } else {
+                    showNotification(result.message || 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                // Fallback to demo login if offline
+                if (empId === 'admin' && password === 'admin123') {
+                    currentUser = {
+                        empId: 'admin',
+                        name: 'Admin User',
+                        role: 'admin',
+                        department: 'Administration'
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showMainApp();
+                    showNotification('Login successful (offline mode)', 'warning');
+                } else {
+                    showNotification('Connection error. Try again or use admin/admin123', 'error');
+                }
+            } finally {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+                loginBtn.disabled = false;
             }
         }
 
@@ -1372,35 +908,55 @@
             document.getElementById('userName').textContent = currentUser.name;
             document.getElementById('userRole').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
             document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
-            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            
+            const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileRole').textContent = currentUser.role;
+            document.getElementById('profileDept').textContent = 'Department: ' + currentUser.department;
             
             // Show admin panel if admin
             if (currentUser.role === 'admin') {
                 document.getElementById('adminNavItem').classList.remove('hidden');
-                // Load employee data for admin
-                updateEmployeeTable();
             }
             
-            // Load user's tasks
-            loadUserTasks();
+            // Load data
+            loadDashboardData();
+        }
+
+        async function loadDashboardData() {
+            // Load recent activities
+            refreshActivityFeed();
             
-            // Don't auto-start shift - let user control it
-            document.getElementById('shiftStatus').textContent = 'Ready to Start';
-            document.getElementById('shiftStartDisplay').textContent = 'Click Start Shift';
-            
-            console.log('🚀 Application loaded for:', currentUser.name);
-            console.log('🎯 Role:', currentUser.role);
+            // Load attendance if admin
+            if (currentUser.role === 'admin') {
+                refreshEmployeeData();
+            }
         }
 
         // Page Navigation
         function switchPage(pageName) {
-            // Remove active class from all nav items and pages
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             
-            // Add active class to selected nav item and page
             document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
             document.getElementById(pageName).classList.add('active');
+            
+            // Load page-specific data
+            switch(pageName) {
+                case 'attendance':
+                    refreshAttendanceData();
+                    break;
+                case 'tasks':
+                    refreshTasksData();
+                    break;
+                case 'admin':
+                    if (currentUser.role === 'admin') {
+                        refreshEmployeeData();
+                    }
+                    break;
+            }
         }
 
         // Theme Toggle
@@ -1410,13 +966,16 @@
             
             const icon = document.querySelector('#themeToggle i');
             icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-            
-            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTimeDisplay').textContent = now.toLocaleTimeString();
         }
 
         // Shift Management
-        // Enhanced Shift Management
-        function startShift() {
+        async function startShift() {
             if (!shiftStartTime) {
                 shiftStartTime = new Date();
                 
@@ -1425,6 +984,7 @@
                 document.getElementById('breakBtn').style.display = 'inline-flex';
                 document.getElementById('endShiftBtn').style.display = 'inline-flex';
                 document.getElementById('shiftStatus').textContent = 'Working';
+                document.getElementById('shiftStatusIndicator').className = 'status-indicator status-online';
                 document.getElementById('shiftStartDisplay').textContent = shiftStartTime.toLocaleTimeString();
                 
                 // Start the timer
@@ -1432,14 +992,49 @@
                 shiftInterval = setInterval(updateShiftTimer, 1000);
                 
                 // Log activity
-                logActivity('shift_start', shiftStartTime);
+                await logActivity('shift_start', shiftStartTime);
                 showNotification(`✅ Shift started at ${shiftStartTime.toLocaleTimeString()}`, 'success');
-                
-                console.log('🚀 Shift started at:', shiftStartTime.toLocaleTimeString());
+                refreshActivityFeed();
             }
         }
 
-        function endShift() {
+        async function takeBreak() {
+            if (!isOnBreak && shiftStartTime) {
+                isOnBreak = true;
+                breakStartTime = new Date();
+                
+                document.getElementById('breakBtn').style.display = 'none';
+                document.getElementById('resumeBtn').style.display = 'inline-flex';
+                document.getElementById('shiftStatus').textContent = 'On Break';
+                document.getElementById('shiftStatusIndicator').className = 'status-indicator status-break';
+                
+                await logActivity('break_start', breakStartTime);
+                showNotification(`☕ Break started at ${breakStartTime.toLocaleTimeString()}`, 'warning');
+                refreshActivityFeed();
+            }
+        }
+
+        async function resumeShift() {
+            if (isOnBreak && breakStartTime) {
+                const resumeTime = new Date();
+                const breakDuration = Math.floor((resumeTime - breakStartTime) / 1000);
+                totalBreakTime += breakDuration;
+                
+                isOnBreak = false;
+                breakStartTime = null;
+                
+                document.getElementById('resumeBtn').style.display = 'none';
+                document.getElementById('breakBtn').style.display = 'inline-flex';
+                document.getElementById('shiftStatus').textContent = 'Working';
+                document.getElementById('shiftStatusIndicator').className = 'status-indicator status-online';
+                
+                await logActivity('break_end', resumeTime, breakDuration);
+                showNotification(`🔄 Resumed at ${resumeTime.toLocaleTimeString()}. Break: ${Math.floor(breakDuration/60)} min`, 'success');
+                refreshActivityFeed();
+            }
+        }
+
+        async function endShift() {
             if (shiftStartTime && confirm('Are you sure you want to end your shift?')) {
                 const endTime = new Date();
                 const totalShiftSeconds = Math.floor((endTime - shiftStartTime) / 1000);
@@ -1451,6 +1046,7 @@
                 document.getElementById('resumeBtn').style.display = 'none';
                 document.getElementById('endShiftBtn').style.display = 'none';
                 document.getElementById('shiftStatus').textContent = 'Shift Ended';
+                document.getElementById('shiftStatusIndicator').className = 'status-indicator status-offline';
                 
                 // Clear timer
                 if (shiftInterval) {
@@ -1459,20 +1055,19 @@
                 }
                 
                 // Log end shift
-                logActivity('shift_end', endTime, workSeconds);
+                await logActivity('shift_end', endTime, workSeconds);
                 
                 // Show summary
                 const workHours = formatDuration(workSeconds);
                 const breakHours = formatDuration(totalBreakTime);
                 
                 showNotification(`🎉 Shift completed! Work: ${workHours}, Break: ${breakHours}`, 'success');
+                refreshActivityFeed();
                 
                 // Reset values
                 shiftStartTime = null;
                 totalBreakTime = 0;
                 isOnBreak = false;
-                
-                console.log('✅ Shift ended. Work time:', workHours, 'Break time:', breakHours);
             }
         }
 
@@ -1486,79 +1081,284 @@
                 Math.floor((now - breakStartTime) / 1000) : 0;
             const totalBreakToShow = totalBreakTime + currentBreakTime;
             
-            // Update displays
             document.getElementById('currentTime').textContent = formatDuration(workTime);
-            document.getElementById('currentTimeDisplay').textContent = now.toLocaleTimeString();
             document.getElementById('workHoursDisplay').textContent = formatDuration(workTime);
             document.getElementById('breakTimeDisplay').textContent = formatDuration(totalBreakToShow);
         }
 
-        function takeBreak() {
-            if (!isOnBreak && shiftStartTime) {
-                isOnBreak = true;
-                breakStartTime = new Date();
-                document.getElementById('breakBtn').style.display = 'none';
-                document.getElementById('resumeBtn').style.display = 'inline-flex';
-                document.getElementById('shiftStatus').textContent = 'On Break';
-                document.getElementById('shiftStatus').style.color = 'var(--warning-color)';
-                
-                logActivity('break_start', breakStartTime);
-                showNotification(`☕ Break started at ${breakStartTime.toLocaleTimeString()}`, 'warning');
-                
-                console.log('☕ Break started at:', breakStartTime.toLocaleTimeString());
+        function restoreSession() {
+            const savedSession = localStorage.getItem('currentSession');
+            if (savedSession) {
+                const session = JSON.parse(savedSession);
+                if (session.shiftStart) {
+                    shiftStartTime = new Date(session.shiftStart);
+                    totalBreakTime = session.totalBreak || 0;
+                    isOnBreak = session.isOnBreak || false;
+                    
+                    // Update UI and restart timer
+                    document.getElementById('startShiftBtn').style.display = 'none';
+                    document.getElementById('breakBtn').style.display = isOnBreak ? 'none' : 'inline-flex';
+                    document.getElementById('resumeBtn').style.display = isOnBreak ? 'inline-flex' : 'none';
+                    document.getElementById('endShiftBtn').style.display = 'inline-flex';
+                    document.getElementById('shiftStatus').textContent = isOnBreak ? 'On Break' : 'Working';
+                    document.getElementById('shiftStatusIndicator').className = `status-indicator ${isOnBreak ? 'status-break' : 'status-online'}`;
+                    document.getElementById('shiftStartDisplay').textContent = shiftStartTime.toLocaleTimeString();
+                    
+                    updateShiftTimer();
+                    shiftInterval = setInterval(updateShiftTimer, 1000);
+                }
             }
         }
 
-        function resumeShift() {
-            if (isOnBreak && breakStartTime) {
-                const resumeTime = new Date();
-                const breakDuration = Math.floor((resumeTime - breakStartTime) / 1000);
-                totalBreakTime += breakDuration;
-                
-                isOnBreak = false;
-                breakStartTime = null;
-                
-                document.getElementById('resumeBtn').style.display = 'none';
-                document.getElementById('breakBtn').style.display = 'inline-flex';
-                document.getElementById('shiftStatus').textContent = 'Working';
-                document.getElementById('shiftStatus').style.color = 'var(--success-color)';
-                
-                logActivity('break_end', resumeTime, breakDuration);
-                showNotification(`🔄 Resumed at ${resumeTime.toLocaleTimeString()}. Break: ${Math.floor(breakDuration/60)} min`, 'success');
-                
-                console.log('🔄 Break ended. Duration:', Math.floor(breakDuration/60), 'minutes');
-            }
-        }
-
-        // Clock Update
-        function updateClock() {
-            const now = new Date();
-            // You can add live clock display if needed
-        }
-
-        // Training Module Toggle
-        function toggleModule(moduleHeader) {
-            const content = moduleHeader.nextElementSibling;
-            const icon = moduleHeader.querySelector('i');
+        // Activity Logging
+        async function logActivity(type, timestamp, duration = null, extraData = null) {
+            const activityData = {
+                action: 'log_activity',
+                employeeId: currentUser.empId,
+                name: currentUser.name,
+                type: type,
+                timestamp: timestamp.toISOString(),
+                duration: duration,
+                extraData: extraData
+            };
             
-            content.classList.toggle('active');
-            icon.classList.toggle('fa-chevron-down');
-            icon.classList.toggle('fa-chevron-up');
-        }
-
-        // Task Management
-        function toggleTask(checkbox) {
-            const taskText = checkbox.nextElementSibling;
-            taskText.classList.toggle('completed', checkbox.checked);
+            // Save locally first
+            const localLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+            localLog.push(activityData);
+            localStorage.setItem('activityLog', JSON.stringify(localLog));
             
-            if (checkbox.checked) {
-                showNotification('Task completed! Great job.', 'success');
+            // Try to sync with Google Sheets
+            if (isConnected) {
+                try {
+                    await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(activityData)
+                    });
+                    
+                    updateSystemStatus('Connected', new Date().toLocaleTimeString());
+                } catch (error) {
+                    console.error('Failed to sync activity:', error);
+                }
+            }
+            
+            // Save session
+            if (shiftStartTime) {
+                const sessionData = {
+                    user: currentUser,
+                    shiftStart: shiftStartTime.toISOString(),
+                    totalBreak: totalBreakTime,
+                    isOnBreak: isOnBreak
+                };
+                localStorage.setItem('currentSession', JSON.stringify(sessionData));
             }
         }
 
-        // Task Management Functions
-        function addNewTask() {
-            // Create modal for adding task
+        // Data Refresh Functions
+        async function refreshActivityFeed() {
+            const feedEl = document.getElementById('activityFeed');
+            
+            try {
+                // Try to get from Google Sheets first
+                if (isConnected) {
+                    const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=get_activities&employeeId=' + currentUser.empId);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        displayActivityFeed(result.data);
+                        return;
+                    }
+                }
+                
+                // Fallback to local data
+                const localLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+                const userActivities = localLog
+                    .filter(activity => activity.employeeId === currentUser.empId)
+                    .slice(-5)
+                    .reverse();
+                
+                displayActivityFeed(userActivities);
+            } catch (error) {
+                feedEl.innerHTML = '<div style="text-align: center; color: var(--danger-color);">Error loading activities</div>';
+            }
+        }
+
+        function displayActivityFeed(activities) {
+            const feedEl = document.getElementById('activityFeed');
+            
+            if (activities.length === 0) {
+                feedEl.innerHTML = '<div style="text-align: center; color: var(--text-light);">No recent activity</div>';
+                return;
+            }
+            
+            feedEl.innerHTML = activities.map(activity => {
+                const time = new Date(activity.timestamp).toLocaleTimeString();
+                const typeEmoji = {
+                    'login': '🚪',
+                    'shift_start': '🚀',
+                    'break_start': '☕',
+                    'break_end': '🔄',
+                    'shift_end': '🏁'
+                }[activity.type] || '📝';
+                
+                return `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light);">
+                        <span style="font-size: 1.2rem;">${typeEmoji}</span>
+                        <div>
+                            <div style="font-weight: 500;">${activity.type.replace('_', ' ').toUpperCase()}</div>
+                            <div style="font-size: 0.9rem; color: var(--text-light);">${time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function refreshAttendanceData() {
+            const tableEl = document.getElementById('attendanceTable');
+            tableEl.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading...</div>';
+            
+            try {
+                if (isConnected) {
+                    const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=get_attendance');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayAttendanceTable(result.data);
+                        return;
+                    }
+                }
+                
+                // Fallback message
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--text-light);">No attendance data available</div>';
+            } catch (error) {
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--danger-color);">Error loading attendance data</div>';
+            }
+        }
+
+        function displayAttendanceTable(data) {
+            const tableEl = document.getElementById('attendanceTable');
+            
+            if (!data || data.length === 0) {
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--text-light);">No attendance records found</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-light);">
+                            <th style="padding: 1rem; text-align: left;">Date</th>
+                            <th style="padding: 1rem; text-align: left;">Employee</th>
+                            <th style="padding: 1rem; text-align: left;">Check In</th>
+                            <th style="padding: 1rem; text-align: left;">Check Out</th>
+                            <th style="padding: 1rem; text-align: left;">Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(record => `
+                            <tr style="border-bottom: 1px solid var(--border-light);">
+                                <td style="padding: 1rem;">${new Date(record.date).toDateString()}</td>
+                                <td style="padding: 1rem;">${record.name}</td>
+                                <td style="padding: 1rem;">${record.checkIn || '-'}</td>
+                                <td style="padding: 1rem;">${record.checkOut || '-'}</td>
+                                <td style="padding: 1rem;">${record.totalHours || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableEl.innerHTML = tableHTML;
+        }
+
+        async function refreshTasksData() {
+            const taskListEl = document.getElementById('taskList');
+            taskListEl.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading tasks...</div>';
+            
+            // For now, show placeholder
+            taskListEl.innerHTML = `
+                <div class="task-item">
+                    <input type="checkbox" class="task-checkbox">
+                    <div class="task-text">
+                        <div style="font-weight: 500;">Complete project proposal</div>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">Due: Today 5:00 PM</div>
+                    </div>
+                    <span style="background: var(--danger-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">High</span>
+                </div>
+                <div style="text-align: center; padding: 2rem;">
+                    <button class="btn btn-primary" onclick="addNewTask()">
+                        <i class="fas fa-plus"></i>
+                        Add Your First Task
+                    </button>
+                </div>
+            `;
+        }
+
+        async function refreshEmployeeData() {
+            const tableEl = document.getElementById('employeeTable');
+            tableEl.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading employees...</div>';
+            
+            try {
+                if (isConnected) {
+                    const response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=get_employees');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayEmployeeTable(result.data);
+                        return;
+                    }
+                }
+                
+                // Fallback message
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--text-light);">No employee data available</div>';
+            } catch (error) {
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--danger-color);">Error loading employee data</div>';
+            }
+        }
+
+        function displayEmployeeTable(data) {
+            const tableEl = document.getElementById('employeeTable');
+            
+            if (!data || data.length === 0) {
+                tableEl.innerHTML = '<div style="text-align: center; color: var(--text-light);">No employees found</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-light);">
+                            <th style="padding: 1rem; text-align: left;">ID</th>
+                            <th style="padding: 1rem; text-align: left;">Name</th>
+                            <th style="padding: 1rem; text-align: left;">Department</th>
+                            <th style="padding: 1rem; text-align: left;">Role</th>
+                            <th style="padding: 1rem; text-align: left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(emp => `
+                            <tr style="border-bottom: 1px solid var(--border-light);">
+                                <td style="padding: 1rem;">${emp.employeeId}</td>
+                                <td style="padding: 1rem;">${emp.name}</td>
+                                <td style="padding: 1rem;">${emp.department}</td>
+                                <td style="padding: 1rem;">${emp.role}</td>
+                                <td style="padding: 1rem;">
+                                    <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
+                                        Active
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableEl.innerHTML = tableHTML;
+        }
+
+        // Admin Functions
+        function addNewEmployee() {
+            // Create modal for adding employee
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -1569,40 +1369,64 @@
             modal.innerHTML = `
                 <div class="card" style="width: 90%; max-width: 500px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3>Add New Task</h3>
+                        <h3>Add New Employee</h3>
                         <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
                     </div>
                     
-                    <form id="newTaskForm">
+                    <form id="newEmployeeForm">
                         <div class="form-group">
-                            <label class="form-label">Task Title</label>
-                            <input type="text" class="form-control" id="newTaskTitle" required placeholder="Enter task title">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" id="newTaskDesc" rows="3" placeholder="Task description (optional)"></textarea>
+                            <label class="form-label">Employee ID</label>
+                            <input type="text" class="form-control" id="newEmpId" required placeholder="e.g., EMP001">
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Due Date</label>
-                                <input type="date" class="form-control" id="newTaskDate">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="newEmpFirstName" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Priority</label>
-                                <select class="form-control" id="newTaskPriority">
-                                    <option value="Low">Low</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="High">High</option>
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="newEmpLastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newEmpEmail" required>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Department</label>
+                                <select class="form-control" id="newEmpDept" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Development">Development</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Finance">Finance</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Role</label>
+                                <select class="form-control" id="newEmpRole" required>
+                                    <option value="">Select Role</option>
+                                    <option value="employee">Employee</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Default Password</label>
+                            <input type="password" class="form-control" id="newEmpPassword" value="emp123" required>
                         </div>
                         
                         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                             <button type="submit" class="btn btn-primary" style="flex: 1;">
                                 <i class="fas fa-plus"></i>
-                                Add Task
+                                Add Employee
                             </button>
                             <button type="button" onclick="this.closest('.modal').remove()" class="btn" style="flex: 1;">Cancel</button>
                         </div>
@@ -1614,378 +1438,82 @@
             document.body.appendChild(modal);
             
             // Handle form submission
-            document.getElementById('newTaskForm').addEventListener('submit', function(e) {
+            document.getElementById('newEmployeeForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const taskData = {
-                    id: 'T' + Date.now(),
-                    title: document.getElementById('newTaskTitle').value,
-                    description: document.getElementById('newTaskDesc').value,
-                    dueDate: document.getElementById('newTaskDate').value,
-                    priority: document.getElementById('newTaskPriority').value,
-                    status: 'Pending',
-                    employeeId: currentUser.empId,
-                    created: new Date().toISOString()
-                };
-                
-                // Add to task list
-                addTaskToList(taskData);
-                
-                // Save to localStorage
-                const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
-                tasks.push(taskData);
-                localStorage.setItem('userTasks', JSON.stringify(tasks));
-                
-                // Log activity
-                logActivity('task_created', new Date(), null, taskData);
-                
-                modal.remove();
-                showNotification('✅ New task added successfully!', 'success');
-                
-                console.log('📋 New task created:', taskData);
-            });
-        }
-
-        function addTaskToList(taskData) {
-            const taskList = document.getElementById('taskList');
-            const taskItem = document.createElement('div');
-            taskItem.className = 'task-item';
-            taskItem.dataset.taskId = taskData.id;
-            
-            const priorityColor = {
-                'High': 'var(--danger-color)',
-                'Medium': 'var(--warning-color)', 
-                'Low': 'var(--primary-color)'
-            }[taskData.priority];
-            
-            taskItem.innerHTML = `
-                <input type="checkbox" class="task-checkbox" onchange="toggleTask(this, '${taskData.id}')">
-                <div class="task-text">
-                    <div style="font-weight: 500;">${taskData.title}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-light);">
-                        ${taskData.description ? taskData.description + ' • ' : ''}
-                        Due: ${taskData.dueDate || 'No deadline'}
-                    </div>
-                </div>
-                <span style="background: ${priorityColor}; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
-                    ${taskData.priority}
-                </span>
-            `;
-            
-            taskList.appendChild(taskItem);
-        }
-
-        function toggleTask(checkbox, taskId) {
-            const taskText = checkbox.nextElementSibling;
-            const isCompleted = checkbox.checked;
-            
-            taskText.classList.toggle('completed', isCompleted);
-            
-            // Update task in localStorage
-            const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
-            const taskIndex = tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                tasks[taskIndex].status = isCompleted ? 'Completed' : 'Pending';
-                tasks[taskIndex].completedAt = isCompleted ? new Date().toISOString() : null;
-                localStorage.setItem('userTasks', JSON.stringify(tasks));
-            }
-            
-            // Log activity
-            const status = isCompleted ? 'completed' : 'uncompleted';
-            logActivity(`task_${status}`, new Date(), null, {taskId, title: taskText.querySelector('div').textContent});
-            
-            if (isCompleted) {
-                showNotification('✅ Task completed! Great job.', 'success');
-            }
-            
-            console.log(`📋 Task ${status}:`, taskId);
-        }
-
-        // Load existing tasks on page load
-        function loadUserTasks() {
-            const tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
-            const taskList = document.getElementById('taskList');
-            
-            // Clear existing demo tasks
-            taskList.innerHTML = '';
-            
-            tasks.forEach(task => {
-                addTaskToList(task);
-                // If task was completed, check the checkbox
-                if (task.status === 'Completed') {
-                    const checkbox = taskList.querySelector(`[data-task-id="${task.id}"] .task-checkbox`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                        checkbox.nextElementSibling.classList.add('completed');
-                    }
-                }
-            });
-            
-            if (tasks.length === 0) {
-                taskList.innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: var(--text-light);">
-                        <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <div>No tasks yet. Click "New Task" to add one!</div>
-                    </div>
-                `;
-            }
-        }
-
-        // Admin Functions
-        function showAddEmployee() {
-            document.getElementById('addEmployeeModal').classList.remove('hidden');
-        }
-
-        function closeAddEmployee() {
-            document.getElementById('addEmployeeModal').classList.add('hidden');
-            document.getElementById('addEmployeeForm').reset();
-        }
-
-        async function handleAddEmployee(e) {
-            e.preventDefault();
-            
-            try {
-                // Get form data
                 const formData = {
-                    empId: document.getElementById('newEmpId').value.trim(),
+                    action: 'add_employee',
+                    employeeId: document.getElementById('newEmpId').value.trim(),
                     firstName: document.getElementById('newEmpFirstName').value.trim(),
                     lastName: document.getElementById('newEmpLastName').value.trim(),
                     email: document.getElementById('newEmpEmail').value.trim(),
                     department: document.getElementById('newEmpDept').value,
                     role: document.getElementById('newEmpRole').value,
-                    joinDate: new Date().toISOString().split('T')[0],
-                    status: 'Active',
+                    password: document.getElementById('newEmpPassword').value,
                     addedBy: currentUser.empId,
-                    addedAt: new Date().toISOString()
+                    dateAdded: new Date().toISOString()
                 };
                 
-                // Validate required fields
-                if (!formData.empId || !formData.firstName || !formData.lastName || !formData.email) {
-                    showNotification('❌ Please fill all required fields', 'error');
-                    return;
-                }
-                
-                // Check if employee ID already exists
-                const existingEmployees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
-                if (existingEmployees.find(emp => emp.empId === formData.empId)) {
-                    showNotification('❌ Employee ID already exists!', 'error');
-                    return;
-                }
-                
-                // Add to local storage
-                existingEmployees.push(formData);
-                localStorage.setItem('companyEmployees', JSON.stringify(existingEmployees));
-                
-                // Add to demo users for login capability
-                demoUsers[formData.empId] = {
-                    password: 'emp123', // Default password
-                    name: `${formData.firstName} ${formData.lastName}`,
-                    role: formData.role,
-                    empId: formData.empId,
-                    department: formData.department
-                };
-                
-                // Send to Google Sheets if configured
                 try {
-                    const sheetData = {
-                        type: 'employee',
-                        employeeId: formData.empId,
-                        firstName: formData.firstName,
-                        lastName: formData.lastName,
-                        email: formData.email,
-                        department: formData.department,
-                        role: formData.role,
-                        joinDate: formData.joinDate,
-                        status: formData.status
-                    };
-                    
-                    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_API_URL_HERE') {
-                        const response = await fetch(APPS_SCRIPT_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(sheetData)
-                        });
-                        
-                        if (response.ok) {
-                            console.log('✅ Employee data sent to Google Sheets');
-                        }
-                    }
-                } catch (error) {
-                    console.log('⚠️ Google Sheets not available, data saved locally');
-                }
-                
-                // Update admin table
-                updateEmployeeTable();
-                
-                // Close modal and show success
-                closeAddEmployee();
-                showNotification(`✅ Employee ${formData.firstName} ${formData.lastName} added successfully!`, 'success');
-                
-                // Log activity
-                logActivity('employee_added', new Date(), null, formData);
-                
-                console.log('👤 New employee added:', formData);
-                console.log('💾 Total employees in database:', existingEmployees.length);
-                
-            } catch (error) {
-                console.error('❌ Error adding employee:', error);
-                showNotification('❌ Error adding employee. Please try again.', 'error');
-            }
-        }
-        
-        function updateEmployeeTable() {
-            const employees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
-            const tableBody = document.querySelector('#admin table tbody');
-            
-            if (tableBody) {
-                tableBody.innerHTML = employees.map(emp => `
-                    <tr style="border-bottom: 1px solid var(--border-light);">
-                        <td style="padding: 1rem;">${emp.empId}</td>
-                        <td style="padding: 1rem;">${emp.firstName} ${emp.lastName}</td>
-                        <td style="padding: 1rem;">${emp.department}</td>
-                        <td style="padding: 1rem;">
-                            <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
-                                ${emp.status}
-                            </span>
-                        </td>
-                        <td style="padding: 1rem;">
-                            <button class="btn" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;" onclick="editEmployee('${emp.empId}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem;" onclick="deleteEmployee('${emp.empId}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-                
-                console.log('📊 Employee table updated with', employees.length, 'employees');
-            }
-        }
-        
-        function editEmployee(empId) {
-            showNotification('🔧 Edit functionality will be available in next update!', 'info');
-        }
-        
-        function deleteEmployee(empId) {
-            if (confirm(`Are you sure you want to delete employee ${empId}?`)) {
-                const employees = JSON.parse(localStorage.getItem('companyEmployees') || '[]');
-                const updatedEmployees = employees.filter(emp => emp.empId !== empId);
-                localStorage.setItem('companyEmployees', JSON.stringify(updatedEmployees));
-                
-                // Remove from demo users
-                delete demoUsers[empId];
-                
-                updateEmployeeTable();
-                showNotification('✅ Employee deleted successfully!', 'success');
-                
-                console.log('🗑️ Employee deleted:', empId);
-            }
-        }
-
-        // Simplified Google Sheets Integration with Debug Mode
-        async function logActivity(type, timestamp, duration = null) {
-            // Debug mode - log to console first
-            const debugData = {
-                type: type,
-                employeeId: currentUser?.empId || 'unknown',
-                name: currentUser?.name || 'unknown',
-                timestamp: timestamp.toISOString(),
-                duration: duration,
-                readable_time: timestamp.toLocaleString()
-            };
-            
-            console.log('🔥 Activity Logged:', debugData);
-            
-            // Show in notification for immediate feedback
-            showNotification(`✅ ${type} logged at ${timestamp.toLocaleTimeString()}`, 'success');
-            
-            // Try to send to Google Sheets (if configured)
-            try {
-                let data = {};
-                
-                // Prepare data based on activity type
-                if (type === 'shift_start' || type === 'shift_end') {
-                    data = {
-                        type: 'attendance',
-                        date: timestamp.toDateString(),
-                        employeeId: currentUser.empId,
-                        name: currentUser.name,
-                        loginTime: type === 'shift_start' ? timestamp.toTimeString().split(' ')[0] : '',
-                        logoutTime: type === 'shift_end' ? timestamp.toTimeString().split(' ')[0] : '',
-                        totalHours: duration ? formatDuration(duration) : '',
-                        breakDuration: totalBreakTime ? formatDuration(totalBreakTime) : '',
-                        status: 'Present'
-                    };
-                } else if (type === 'break_start' || type === 'break_end') {
-                    data = {
-                        type: 'break',
-                        timestamp: timestamp.toISOString(),
-                        employeeId: currentUser.empId,
-                        name: currentUser.name,
-                        action: type,
-                        duration: duration ? formatDuration(duration) : '',
-                        reason: type === 'break_start' ? 'Break' : 'Resume'
-                    };
-                }
-                
-                console.log('📤 Sending to Google Sheets:', data);
-                
-                // Only try API call if URL is properly configured
-                if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_API_URL_HERE') {
-                    const response = await fetch(APPS_SCRIPT_URL, {
+                    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
                     });
                     
-                    if (response.ok) {
-                        console.log('✅ Data sent to Google Sheets successfully');
-                        showNotification('✅ Data saved to database!', 'success');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        modal.remove();
+                        showNotification('✅ Employee added successfully!', 'success');
+                        refreshEmployeeData();
                     } else {
-                        console.error('❌ Google Sheets API Error:', response.statusText);
-                        showNotification('⚠️ Saved locally, sync pending', 'warning');
+                        showNotification('❌ ' + (result.message || 'Failed to add employee'), 'error');
                     }
-                } else {
-                    console.log('⚠️ Google Apps Script URL not configured - data logged locally only');
-                    showNotification('⚠️ Demo mode - data not saved to sheets', 'warning');
+                } catch (error) {
+                    showNotification('❌ Network error. Please try again.', 'error');
                 }
-                
-            } catch (error) {
-                console.error('❌ Error logging to Google Sheets:', error);
-                showNotification('⚠️ Network error - data saved locally', 'warning');
-                
-                // Store locally if network fails
-                const localLog = JSON.parse(localStorage.getItem('offlineLog') || '[]');
-                localLog.push({type, timestamp: timestamp.toISOString(), duration, employee: currentUser?.empId});
-                localStorage.setItem('offlineLog', JSON.stringify(localLog));
-                console.log('💾 Data stored locally:', localLog);
-            }
+            });
         }
-        
-        // Helper function to format duration
+
+        function addNewTask() {
+            showNotification('📋 Task management will be available in next update!', 'info');
+        }
+
+        async function syncAllData() {
+            showNotification('🔄 Syncing all data with Google Sheets...', 'info');
+            
+            // Try to sync local data
+            const localLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+            
+            for (const activity of localLog) {
+                try {
+                    await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(activity)
+                    });
+                } catch (error) {
+                    console.error('Sync failed for activity:', activity);
+                }
+            }
+            
+            showNotification('✅ Data sync completed!', 'success');
+            updateSystemStatus('Connected', new Date().toLocaleTimeString());
+        }
+
+        function viewGoogleSheet() {
+            window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}`, '_blank');
+        }
+
+        // Utility Functions
         function formatDuration(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
-        
-        // Function to get employee data from Google Sheets
-        async function getEmployeeData(sheetName = 'Employees') {
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${sheetName}`);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Error fetching employee data:', error);
-                return [];
-            }
-        }
 
-        // Utility Functions
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = 'notification show';
@@ -2025,16 +1553,12 @@
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                // Calculate total shift time
-                let totalShiftSeconds = 0;
-                if (shiftStartTime) {
-                    totalShiftSeconds = Math.floor((new Date() - shiftStartTime) / 1000) - totalBreakTime;
-                }
-                
-                // End shift and log data
+                // End shift if active
                 if (shiftInterval) {
                     clearInterval(shiftInterval);
-                    logActivity('shift_end', new Date(), totalShiftSeconds);
+                    if (shiftStartTime) {
+                        logActivity('shift_end', new Date(), Math.floor((new Date() - shiftStartTime) / 1000) - totalBreakTime);
+                    }
                 }
                 
                 // Clear data
@@ -2050,109 +1574,16 @@
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('loginPage').classList.remove('hidden');
                 
-                showNotification('Logged out successfully! Shift data saved.', 'success');
+                showNotification('Logged out successfully!', 'success');
             }
         }
 
-        // Debug Functions
-        function testBreakFunction() {
-            console.log('🧪 Testing Break Function...');
-            addDebugLog('Testing Break Function...');
-            takeBreak();
-            addDebugLog('Break function executed');
-        }
-        
-        function testResumeFunction() {
-            console.log('🧪 Testing Resume Function...');
-            addDebugLog('Testing Resume Function...');
-            resumeShift();
-            addDebugLog('Resume function executed');
-        }
-        
-        function testNotification() {
-            console.log('🧪 Testing Notification...');
-            addDebugLog('Testing Notification System...');
-            showNotification('🧪 Test notification - All systems working!', 'info');
-        }
-        
-        function clearLocalData() {
-            localStorage.clear();
-            addDebugLog('Local storage cleared');
-            showNotification('Local data cleared!', 'success');
-            refreshDebugInfo();
-        }
-        
-        function addDebugLog(message) {
-            const debugLogs = document.getElementById('debugLogs');
-            if (debugLogs) {
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = document.createElement('div');
-                logEntry.innerHTML = `<span style="color: #10b981;">[${timestamp}]</span> ${message}`;
-                debugLogs.appendChild(logEntry);
-                debugLogs.scrollTop = debugLogs.scrollHeight;
-            }
-        }
-        
-        function refreshDebugInfo() {
-            // Update debug status
-            document.getElementById('debugUser').textContent = currentUser ? currentUser.name : 'Not logged in';
-            document.getElementById('debugShift').textContent = shiftStartTime ? 'Active' : 'Not started';
-            document.getElementById('debugBreak').textContent = isOnBreak ? 'On Break' : 'Working';
-            document.getElementById('debugAPI').textContent = APPS_SCRIPT_URL || 'Not configured';
-            
-            // Update storage info
-            const storageDiv = document.getElementById('debugStorage');
-            const storageData = {
-                currentUser: localStorage.getItem('currentUser'),
-                currentSession: localStorage.getItem('currentSession'),
-                offlineLog: localStorage.getItem('offlineLog'),
-                darkMode: localStorage.getItem('darkMode')
-            };
-            
-            storageDiv.innerHTML = '<pre>' + JSON.stringify(storageData, null, 2) + '</pre>';
-            
-            addDebugLog('Debug info refreshed');
-        }
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('darkMode');
-        if (savedTheme === 'true') {
-            toggleTheme();
-        }
-
-        // Auto-save functionality (optional)
+        // Auto-save session data
         setInterval(() => {
             if (currentUser && shiftStartTime) {
-                // Auto-save current session data
                 const sessionData = {
                     user: currentUser,
                     shiftStart: shiftStartTime.toISOString(),
-                    totalBreak: totalBreakTime,
-                    isOnBreak: isOnBreak
-                };
-                localStorage.setItem('currentSession', JSON.stringify(sessionData));
-                console.log('💾 Session auto-saved');
-            }
-        }, 30000); // Save every 30 seconds
-        
-        // Initialize debug panel when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                if (document.getElementById('debugLogs')) {
-                    addDebugLog('🚀 Employee Portal Debug Panel Initialized');
-                    addDebugLog('Website loaded successfully');
-                    refreshDebugInfo();
-                }
-            }, 1000);
-        });
-
-        // Auto-save functionality (optional)
-        setInterval(() => {
-            if (currentUser && shiftStartTime) {
-                // Auto-save current session data
-                const sessionData = {
-                    user: currentUser,
-                    shiftStart: shiftStartTime,
                     totalBreak: totalBreakTime,
                     isOnBreak: isOnBreak
                 };
